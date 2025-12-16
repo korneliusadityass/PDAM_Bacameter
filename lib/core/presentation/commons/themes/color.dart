@@ -16,6 +16,17 @@ const Color primary300 = Color(0xff7F89E0);
 const Color primary200 = Color(0xffAEB5F4);
 const Color primary100 = Color(0xffD5DAF9);
 
+// Neutral Color
+Color neutralColor1 = const Color(0xFFFEFEFE);
+Color neutralColor2 = const Color(0xFFF5F5F5);
+Color neutralColor3 = const Color(0xFFEDEDED);
+Color neutralColor4 = const Color(0xFFE0E0E0);
+Color neutralColor5 = const Color(0xFFC2C2C2);
+Color neutralColor6 = const Color(0xFF9E9E9E);
+Color neutralColor7 = const Color(0xFF757575);
+Color neutralColor8 = const Color(0xFF505050);
+Color neutralColor9 = const Color(0xFF1C1B1F);
+
 /// ---------- BASE COLOR ----------
 const Color baseBlack = Color(0xff303030);
 const Color baseGrey = Color(0xffCCCCCC);

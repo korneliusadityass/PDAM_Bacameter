@@ -421,7 +421,7 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
     required File? selectedImage, // Terima state gambar dari parent
     required Function(File?) onImagePicked,
   }) {
-    Future<void> _pickImage(ImageSource source) async {
+    Future<void> pickImage(ImageSource source) async {
       try {
         final pickedFile = await ImagePicker().pickImage(
           source: source,
@@ -456,14 +456,14 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  _pickImage(ImageSource.camera);
+                  pickImage(ImageSource.camera);
                 },
                 child: Text('Kamera'),
               ),
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  _pickImage(ImageSource.gallery);
+                  pickImage(ImageSource.gallery);
                 },
                 child: Text('Galeri'),
               ),

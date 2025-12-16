@@ -2,10 +2,12 @@ import 'package:baca_meter/core/data/database/database.dart';
 import 'package:baca_meter/core/presentation/commons/methods/methods.dart';
 import 'package:baca_meter/core/presentation/commons/themes/color.dart';
 import 'package:baca_meter/core/presentation/page/home/feature/daftar_rayon/database/repository.dart';
-import 'package:baca_meter/core/presentation/page/home/feature/daftar_rayon/list_pelanggan/list_pelanggan_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:remixicon/remixicon.dart';
+
+import '../../../../commons/routes/routes.dart';
 
 class DaftarRayonPage extends StatefulWidget {
   const DaftarRayonPage({super.key});
@@ -100,7 +102,7 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
               // Area putih di bawah header
               Expanded(child: Container(color: baseWhite)),
             ],
-          ), 
+          ),
 
           // Konten utama yang menumpang di atas header
           Positioned(
@@ -250,12 +252,16 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
   Widget _buildRayonItem(RayonTableData rayon) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                ListPelangganPage(rayonId: rayon.id, rayonName: rayon.nama),
-          ),
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(
+        //     builder: (context) =>
+        //         ListPelangganPage(rayonId: rayon.id, rayonName: rayon.nama),
+        //   ),
+        // );
+        context.pushNamed(
+          Routes.listPelangganPage,
+          pathParameters: {'rayonId': rayon.id, 'rayonName': rayon.nama},
         );
       },
       child: Container(
@@ -372,7 +378,7 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
         border: Border.all(color: borderDark),
         boxShadow: [
           BoxShadow(
-            color: baseBlack.withValues(alpha:  0.3),
+            color: baseBlack.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -467,7 +473,7 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                 decoration: BoxDecoration(
-                  color: primary500Base.withValues(alpha:  0.1),
+                  color: primary500Base.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20.r),
                   border: Border.all(color: primary500Base),
                 ),

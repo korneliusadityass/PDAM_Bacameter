@@ -137,13 +137,11 @@ class _ScanPageState extends State<ScanPage> with TickerProviderStateMixin {
                             right: 12.w,
                             child: GestureDetector(
                               onTap: () {
-                                if (_controller != null) {
-                                  _controller.toggleTorch();
-                                  setState(() {
-                                    _flashOn = _controller.torchEnabled;
-                                  });
-                                }
-                              },
+                                _controller.toggleTorch();
+                                setState(() {
+                                  _flashOn = _controller.torchEnabled;
+                                });
+                                                            },
                               child: Container(
                                 width: 40.w,
                                 height: 40.h,

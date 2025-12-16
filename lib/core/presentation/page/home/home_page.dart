@@ -1,12 +1,12 @@
 import 'package:baca_meter/core/presentation/commons/methods/methods.dart';
 import 'package:baca_meter/core/presentation/commons/themes/color.dart';
-import 'package:baca_meter/core/presentation/page/home/feature/daftar_rayon/daftar_rayon_page.dart';
-import 'package:baca_meter/core/presentation/page/home/feature/last_digit/last_digit_page.dart';
-import 'package:baca_meter/core/presentation/page/home/feature/scan/scan_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:remixicon/remixicon.dart';
+
+import '../../commons/routes/routes.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -289,10 +289,11 @@ class _HomePageState extends State<HomePage> {
       children: [
         GestureDetector(
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const DaftarRayonPage()),
-            );
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(builder: (context) => const DaftarRayonPage()),
+            // );
+            context.pushNamed(Routes.daftarRayonPage);
           },
           child: Container(
             padding: const EdgeInsets.all(8),
@@ -327,10 +328,11 @@ class _HomePageState extends State<HomePage> {
       children: [
         GestureDetector(
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const LastDigitPage()),
-            );
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(builder: (context) => const LastDigitPage()),
+            // );
+            context.pushNamed(Routes.lastDigitPage);
           },
           child: Container(
             padding: const EdgeInsets.all(8),
@@ -364,10 +366,11 @@ class _HomePageState extends State<HomePage> {
         GestureDetector(
           onTap: () {
             // Tambahkan navigasi untuk scan di sini jika diperlukan
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ScanPage()),
-            );
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(builder: (context) => ScanPage()),
+            // );
+            context.pushNamed(Routes.scanPage);
           },
           child: Container(
             padding: const EdgeInsets.all(8),

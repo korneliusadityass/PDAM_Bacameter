@@ -1,9 +1,11 @@
 import 'package:baca_meter/core/presentation/commons/methods/methods.dart';
 import 'package:baca_meter/core/presentation/commons/themes/color.dart';
-import 'package:baca_meter/core/presentation/page/home/feature/detail_pelanggan/detail_pelanggan_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:remixicon/remixicon.dart';
+
+import '../../../../commons/routes/routes.dart';
 
 class LastDigitPage extends StatefulWidget {
   const LastDigitPage({super.key});
@@ -241,10 +243,11 @@ class _LastDigitPageState extends State<LastDigitPage> {
         // Simpan ke riwayat sebelum navigasi
         _addToSearchHistory(last3Digits, name, fullNumber);
 
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const DetailPelangganPage()),
-        );
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(builder: (context) => const DetailPelangganPage()),
+        // );
+        context.pushNamed(Routes.detailPelangganPage);
       },
       child: Container(
         padding: const EdgeInsets.all(12),

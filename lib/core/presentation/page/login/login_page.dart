@@ -1,11 +1,13 @@
 import 'package:baca_meter/core/presentation/commons/methods/methods.dart';
 import 'package:baca_meter/core/presentation/commons/themes/color.dart';
 import 'package:baca_meter/core/presentation/page/login/setting/setting_login_page.dart';
-import 'package:baca_meter/core/presentation/page/main_page/main_page.dart';
 import 'package:baca_meter/core/presentation/widget/form_field/form_field_outline.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:remixicon/remixicon.dart';
+
+import '../../commons/routes/routes.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -300,10 +302,11 @@ class _LoginPageState extends State<LoginPage> {
     if (username.isEmpty || password.isEmpty) {
       _showDialog('Error', 'Harap isi username dan password');
     } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const MainPage()),
-      );
+      // Navigator.push(
+      //   context,
+      //   MaterialPageRoute(builder: (context) => const MainPage()),
+      // );
+      context.goNamed(Routes.mainPage);
     }
   }
 
