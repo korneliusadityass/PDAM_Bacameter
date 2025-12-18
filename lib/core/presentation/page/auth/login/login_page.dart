@@ -1,13 +1,13 @@
 import 'package:baca_meter/core/presentation/commons/methods/methods.dart';
 import 'package:baca_meter/core/presentation/commons/themes/color.dart';
-import 'package:baca_meter/core/presentation/page/login/setting/setting_login_page.dart';
+import 'package:baca_meter/core/presentation/page/auth/login/setting/setting_login_page.dart';
 import 'package:baca_meter/core/presentation/widget/form_field/form_field_outline.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:remixicon/remixicon.dart';
 
-import '../../commons/routes/routes.dart';
+import '../../../commons/routes/routes.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../data/utilities/state/request_state.dart';
+import '../../../../../data/utilities/state/request_state.dart';
 
 enum SwitchFormState { phoneNumber, email }
 

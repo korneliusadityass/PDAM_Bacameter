@@ -7,7 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../domain/repositories/auth/auth_repository.dart';
-import '../../presentation/page/login/provider/login_notifier.dart';
+import '../../presentation/page/auth/login/provider/login_notifier.dart';
 import '../../presentation/utilities/internet_connectivity_provider.dart';
 import '../repositories_impl/auth/auth_repository_impl.dart';
 import '../utilities/network/dio_handler.dart';

@@ -8,8 +8,9 @@ import '../page/home/feature/daftar_rayon/daftar_rayon_page.dart';
 import '../page/home/feature/daftar_rayon/list_pelanggan/list_pelanggan_page.dart';
 import '../page/home/feature/detail_pelanggan/detail_pelanggan_page.dart';
 import '../page/home/feature/last_digit/last_digit_page.dart';
-import '../page/login/login_page.dart';
+import '../page/auth/login/login_page.dart';
 import '../page/main_page/main_page.dart';
+import '../page/splash/splash_page.dart';
 
 
 class AppRouter {
@@ -20,11 +21,11 @@ class AppRouter {
     ],
     routes: [
       // /// Splash
-      // GoRoute(
-      //   path: '/splash',
-      //   name: Routes.splash,
-      //   builder: (context, state) => const SplashPage(),
-      // ),
+      GoRoute(
+        path: '/splash',
+        name: Routes.splash,
+        builder: (context, state) => const SplashPage(),
+      ),
 
       /// Authentication
       GoRoute(
@@ -79,7 +80,7 @@ class AppRouter {
         builder: (context, state) => const DetailPelangganPage(),
       ),
     ],
-    initialLocation: '/login-page',
+    initialLocation: '/splash',
     debugLogDiagnostics: kDebugMode ? true : false,
   );
 }

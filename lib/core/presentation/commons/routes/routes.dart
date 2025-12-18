@@ -1,4 +1,6 @@
 class Routes {
+  // Splash
+  static const String splash = 'splash';
   // Login
   static const String loginPage = 'login-page';
   // Home
