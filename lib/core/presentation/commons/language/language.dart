@@ -1,12 +1,13 @@
 class Language {
   /// Login Page
-  static String textLoginTermsOfService = 'Ketentuan Layanan';
-  static String textLoginPrivacyPolicy = 'Kebijakan Privasi';
-  static String textLoginOrRegisterWith = 'Atau daftar dengan';
-  static String textLoginWithEmail = 'Masuk dengan email';
-  static String textLoginWithPhoneNumber = 'Masuk dengan nomor telepon';
-  static String textEmail = 'Email';
-  static String textPassword = 'Password';
-  static String textOk = 'Ok';
-  static String textBack = 'Kembali';
+  static String poweredBy = 'Powered by';
+  static String masuk = 'Masuk';
+  static String selamatDatang = 'Selamat Datang';
+  static String lanjutkan = 'Lanjutkan';
+  static String gunakanAkunYangTelahdiberikanOlehPerusahaan = 'Gunakan akun yang telah diberikan oleh perusahaan';
+  static String silahkanPilihPDAMTempatAndaBerkerjaTerlebihDahulu = 'Silahkan Pilih PDAM tempat anda berkerja terlebih dahulu';
+  static String masukkanUsername = 'Masukkan Username';
+  static String masukkanKataSandi = 'Masukkan Kata Sandi';
+  static String pengaturan = 'Pengaturan';
+  static String simpan = 'Simpan';
 }

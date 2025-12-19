@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:baca_meter/core/presentation/commons/language/language.dart';
 import 'package:baca_meter/core/presentation/commons/methods/methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -76,7 +77,7 @@ class SplashPage extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Powered by',
+                        Language.poweredBy,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 10,
