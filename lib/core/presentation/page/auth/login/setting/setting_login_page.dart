@@ -1,8 +1,6 @@
 import 'package:baca_meter/core/presentation/commons/language/language.dart';
 import 'package:baca_meter/core/presentation/commons/methods/methods.dart';
 import 'package:baca_meter/core/presentation/commons/themes/color.dart';
-import 'package:baca_meter/core/presentation/widget/dropdown/form_dropdown.dart';
-import 'package:baca_meter/core/presentation/widget/form_field/form_field_outline.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -113,22 +111,22 @@ class _SettingsDialogState extends State<SettingsDialog> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        FormDropdownButton(
-          selectedValue: _currentSelectedPdam,
-          onChanged: (value) {
-            setState(() {
-              _currentSelectedPdam = value;
-              _showPasswordField = value != null && value.isNotEmpty;
-            });
-            widget.onPdamChanged?.call(value);
-          },
-          textHint: 'Pilih PDAM',
-          data: widget.pdamData,
-        ),
+        // FormDropdownButton(
+        //   selectedValue: _currentSelectedPdam,
+        //   onChanged: (value) {
+        //     setState(() {
+        //       _currentSelectedPdam = value;
+        //       _showPasswordField = value != null && value.isNotEmpty;
+        //     });
+        //     widget.onPdamChanged?.call(value);
+        //   },
+        //   textHint: 'Pilih PDAM',
+        //   data: widget.pdamData,
+        // ),
 
         if (_showPasswordField) ...[
           verticalSpace(16.h), // Jarak antara dropdown dan password
-          _buildPassword(),
+          // _buildPassword(),
         ],
 
         if (!widget.isInline) ...[verticalSpace(16.h), _buildSaveButton()],
@@ -136,14 +134,13 @@ class _SettingsDialogState extends State<SettingsDialog> {
     );
   }
 
-  Widget _buildPassword() => FormFieldOutline(
-    inputType: TextInputType.visiblePassword,
-    controller: _passwordController,
-    title: '',
-    prefixIcon: Icon(Remix.lock_2_fill, color: baseBlack, size: 20),
-    hint: 'Masukkan password',
-    obscureText: true,
-  );
+  // Widget _buildPassword() => FormFieldOutline(
+  //   inputType: TextInputType.visiblePassword,
+  //   controller: _passwordController,
+  //   prefixIcon: Icon(Remix.lock_2_fill, color: baseBlack, size: 20),
+  //   hint: 'Masukkan password',
+  //   obscureText: true,
+  // );
 
   Widget _buildSaveButton() => GestureDetector(
     onTap: () {

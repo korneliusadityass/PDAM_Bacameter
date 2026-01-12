@@ -10,4 +10,11 @@ class Language {
   static String masukkanKataSandi = 'Masukkan Kata Sandi';
   static String pengaturan = 'Pengaturan';
   static String simpan = 'Simpan';
+  static String pilihPDAM = 'Pilih PDAM';
+  static String masukkanPassword = 'Masukkan password';
+  static String cari = 'Cari...';
+  static String pilih = 'Pilih';
+
+
+
 }
