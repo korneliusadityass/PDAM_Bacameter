@@ -14,6 +14,10 @@ class Language {
   static String masukkanPassword = 'Masukkan password';
   static String cari = 'Cari...';
   static String pilih = 'Pilih';
+  static String home = 'Home';
+  static String manajemenData = 'Manajemen Data';
+  static String profile = 'Profile';
+  
 
 
 

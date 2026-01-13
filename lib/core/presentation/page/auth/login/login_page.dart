@@ -126,6 +126,7 @@ class _LoginPageState extends State<LoginPage> {
                                         ? Language.masuk
                                         : Language.selamatDatang,
                                     style: TextStyle(
+                                      fontFamily: 'Inter',
                                       fontSize: 20.sp,
                                       fontWeight: FontWeight.w700,
                                       color: text700,
@@ -141,6 +142,7 @@ class _LoginPageState extends State<LoginPage> {
                                               .silahkanPilihPDAMTempatAndaBerkerjaTerlebihDahulu,
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
+                                      fontFamily: 'Inter',
                                       fontSize: 14.sp,
                                       color: text400,
                                       height: 1.4,
@@ -205,6 +207,7 @@ class _LoginPageState extends State<LoginPage> {
                   Text(
                     Language.poweredBy,
                     style: TextStyle(
+                      fontFamily: 'Inter',
                       fontSize: 10.sp,
                       color: text700,
                       fontWeight: FontWeight.w600,
@@ -349,6 +352,7 @@ class _LoginPageState extends State<LoginPage> {
                       Text(
                         Language.pilihPDAM,
                         style: TextStyle(
+                          fontFamily: 'Inter',
                           fontSize: 16.sp,
                           fontWeight: bold,
                           color: text700,
@@ -428,7 +432,11 @@ class _LoginPageState extends State<LoginPage> {
                         ? Center(
                             child: Text(
                               'Tidak ada data PDAM',
-                              style: TextStyle(fontSize: 14.sp, color: text400),
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                color: text400,
+                                fontFamily: 'Inter',
+                              ),
                             ),
                           )
                         : ListView.builder(
@@ -685,6 +693,7 @@ class _LoginPageState extends State<LoginPage> {
                       Text(
                         Language.pengaturan,
                         style: TextStyle(
+                          fontFamily: 'Inter',
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w700,
                           color: text700,

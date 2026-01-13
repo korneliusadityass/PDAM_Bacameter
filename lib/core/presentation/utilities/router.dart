@@ -80,7 +80,8 @@ class AppRouter {
         builder: (context, state) => const DetailPelangganPage(),
       ),
     ],
-    initialLocation: '/splash',
+    // initialLocation: '/splash',
+    initialLocation: '/main-page',
     debugLogDiagnostics: kDebugMode ? true : false,
   );
 }

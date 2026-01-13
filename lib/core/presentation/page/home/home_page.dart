@@ -1,11 +1,14 @@
 import 'package:baca_meter/core/presentation/commons/methods/methods.dart';
 import 'package:baca_meter/core/presentation/commons/themes/color.dart';
+import 'package:baca_meter/core/presentation/commons/themes/constants.dart';
+import 'package:baca_meter/core/presentation/commons/themes/text_styel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:remixicon/remixicon.dart';
 
+import '../../commons/extensions/context_extension.dart';
 import '../../commons/routes/routes.dart';
 
 class HomePage extends StatefulWidget {
@@ -19,64 +22,428 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // Background utama
-          Column(
-            children: [
-              // Header dengan background biru
-              _buildHeader(),
-              // Konten utama dengan rounded top - Expanded untuk mengisi sisa space
-              Expanded(child: Container(color: baseWhite)),
-            ],
-          ),
+          // // Background utama
+          // Column(
+          //   children: [
+          //     // Header dengan background biru
+          //     _buildHeader(),
+          //     // Konten utama dengan rounded top - Expanded untuk mengisi sisa space
+          //     Expanded(child: Container(color: baseWhite)),
+          //   ],
+          // ),
 
-          // Konten utama yang menumpuk di atas header
-          Positioned(
-            top: 155, // Sesuaikan dengan tinggi header yang diinginkan
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              alignment: Alignment.topCenter,
-              decoration: const BoxDecoration(
-                color: baseWhite,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
-              ),
-              child: Column(
-                children: [
-                  // Persentase selesai
-                  _buildCompletionPercentage(),
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    child: Row(
-                      children: [
-                        Expanded(child: _buildRayonList()),
-                        Expanded(child: _buildLastDigit()),
-                        Expanded(child: _buildScan()),
-                      ],
-                    ),
-                  ),
-                  verticalSpace(20.h),
-                ],
-              ),
-            ),
-          ),
+          // // Konten utama yang menumpuk di atas header
+          // Positioned(
+          //   top: 155, // Sesuaikan dengan tinggi header yang diinginkan
+          //   left: 0,
+          //   right: 0,
+          //   bottom: 0,
+          //   child: Container(
+          //     alignment: Alignment.topCenter,
+          //     decoration: const BoxDecoration(
+          //       color: baseWhite,
+          //       borderRadius: BorderRadius.only(
+          //         topLeft: Radius.circular(20),
+          //         topRight: Radius.circular(20),
+          //       ),
+          //     ),
+          //     child: Column(
+          //       children: [
+          //         // Persentase selesai
+          //         _buildCompletionPercentage(),
+          //         Container(
+          //           width: double.infinity,
+          //           padding: EdgeInsets.symmetric(horizontal: 20.w),
+          //           child: Row(
+          //             children: [
+          //               Expanded(child: _buildRayonList()),
+          //               Expanded(child: _buildLastDigit()),
+          //               Expanded(child: _buildScan()),
+          //             ],
+          //           ),
+          //         ),
+          //         verticalSpace(20.h),
+          //       ],
+          //     ),
+          //   ),
+          // ),
 
-          // SafeArea di atas stack untuk menghindari notch
-          const SafeArea(
-            top: true,
-            bottom: false,
-            left: false,
-            right: false,
-            child: SizedBox(),
-          ),
+          // // SafeArea di atas stack untuk menghindari notch
+          // const SafeArea(
+          //   top: true,
+          //   bottom: false,
+          //   left: false,
+          //   right: false,
+          //   child: SizedBox(),
+          // ),
+          _buildBackground(context),
+          _buildContent(context),
         ],
       ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Profile
+        Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: defaultMargin.w,
+            vertical: 16.h,
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                // decoration: BoxDecoration(
+                //   color: Colors.white,
+                //   shape: BoxShape.circle,
+                //   border: Border.all(color: Colors.white, width: 2),
+                // ),
+                // child: Icon(Icons.person, color: Colors.blue[700], size: 35),
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: Icon(Icons.person, color: Colors.blue[700], size: 35),
+              ),
+              horizontalSpace(12.w),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Rey Ronald',
+                    style: TextStyle(
+                      color: Colors.white /* Color-Base-color-Text-Text-1 */,
+                      fontSize: 16.sp,
+                      fontFamily: 'Inter',
+                      fontWeight: semiBold,
+                    ),
+                  ),
+                  verticalSpace(4.h),
+                  Text(
+                    'Petugas Pembaca Meter',
+                    style: TextStyle(
+                      color: Colors.white /* Color-Base-color-Text-Text-1 */,
+                      fontSize: 12.sp,
+                      fontFamily: 'Inter',
+                      fontWeight: regular,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        // Periode Pembacaan
+        Padding(
+          padding: EdgeInsets.symmetric(
+            vertical: 12.h,
+            horizontal: defaultMargin.w,
+          ),
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+            decoration: ShapeDecoration(
+              color: Colors.white.withValues(alpha: 0.25),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              spacing: 10,
+              children: [
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: ShapeDecoration(
+                    color:
+                        Colors.white /* Color-Base-color-Background-Bg-white */,
+                    shape: OvalBorder(),
+                  ),
+                ),
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: 'Periode Pembacaan: ',
+                        style: TextStyle(
+                          color: Colors
+                              .white /* Color-Base-color-Background-Bg-white */,
+                          fontSize: 14.sp,
+                          fontFamily: 'Inter',
+                          fontWeight: regular,
+                        ),
+                      ),
+                      TextSpan(
+                        text: 'Oktober 2025',
+                        style: TextStyle(
+                          color: Colors
+                              .white /* Color-Base-color-Background-Bg-white */,
+                          fontSize: 14.sp,
+                          fontFamily: 'Inter',
+                          fontWeight: bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Content
+        Expanded(child: _content()),
+      ],
+    );
+  }
+
+  Widget _content() {
+    return Container(
+      // clipBehavior: Clip.hardEdge,
+      width: double.infinity,
+      padding: EdgeInsets.only(
+        // top: 24.h,
+        left: 16.w,
+        right: 16.w,
+        // bottom: 16.h,
+      ),
+      decoration: ShapeDecoration(
+        color: Colors.white /* Color-Base-color-Background-Bg-white */,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+      ),
+      child: ListView(
+        scrollDirection: Axis.vertical,
+        shrinkWrap: true,
+        padding: EdgeInsets.zero,
+        children: [
+          verticalSpace(24.h),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(
+              vertical: 16.h,
+              horizontal: 16.w,
+            ), // EdgeInsets.all16),
+            decoration: ShapeDecoration(
+              color: const Color(
+                0xFFF0F3FF,
+              ) /* Color-Base-color-Background-Bg-sections */,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'Laporan Produktivitas Pembaca',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: const Color(0xFF1F1F25),
+                    fontSize: 16,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w700,
+                    height: 1.50,
+                  ),
+                ),
+                verticalSpace(24.h),
+                Align(
+                  alignment: Alignment.topCenter,
+                  heightFactor: 0.6, // 👈 POTONG TINGGI JADI SETENGAH
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Background setengah lingkaran
+                      CircularPercentIndicator(
+                        radius: 80.0,
+                        lineWidth: 12.0,
+                        percent: 1.0,
+                        arcType: ArcType.HALF,
+                        circularStrokeCap: CircularStrokeCap.round,
+                        progressBorderColor: baseWhite,
+                        progressColor: baseWhite.withValues(alpha: 0.3),
+                        backgroundColor: Colors.transparent,
+                      ),
+                      // Progress sebenarnya
+                      CircularPercentIndicator(
+                        radius: 80.0,
+                        lineWidth: 12.0,
+                        percent: 0.62,
+                        arcType: ArcType.HALF,
+                        circularStrokeCap: CircularStrokeCap.round,
+                        progressColor: primary500Base,
+                        backgroundColor: Colors.transparent,
+                        center: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '62 %',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: const Color(
+                                  0xFF131313,
+                                ) /* Color-Base-color-Text-Text-6 */,
+                                fontSize: 28,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w700,
+                                height: 1.43,
+                              ),
+                            ),
+                            Text(
+                              'Selesai',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: const Color(
+                                  0xFF6E6E6E,
+                                ) /* Color-Base-color-Text-Text-3 */,
+                                fontSize: 12,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w400,
+                                height: 1.33,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                verticalSpace(24.h),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildStatItem('Jumlah Pelanggan', '0'),
+                    verticalSpace(12.h),
+                    _buildStatItem('Sudah Terbaca', '0'),
+                    verticalSpace(12.h),
+                    _buildStatItem('Belum Terbaca', '0'),
+                    verticalSpace(12.h),
+                    _buildStatItem('Belum Upload', '0'),
+                    verticalSpace(12.h),
+                    _buildStatItem('Kelainan', '0'),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          verticalSpace(24.h),
+          // Daftar
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [_buildRayonList(), _buildLastDigit(), _buildScan()],
+          ),
+          verticalSpace(200.h),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBackground(BuildContext context) {
+    // return Container(
+    //   width: double.infinity,
+    //   height: context.height * 0.4,
+    //   decoration: BoxDecoration(color: primary500Base),
+    // padding: const EdgeInsets.all(16.0),
+    // decoration: BoxDecoration(
+    //   color: primary500Base,
+    //   image: const DecorationImage(
+    //     image: AssetImage('assets/icon/home/ic_appbar.png'),
+    //     fit: BoxFit.contain,
+    //     alignment: Alignment.centerRight,
+    //   ),
+    // ),
+    // child: Column(
+    //   children: [
+    //     // Bagian paling atas: Home
+    //     Row(
+    //       children: [
+    //         Container(
+    //           width: 60,
+    //           height: 60,
+    //           decoration: BoxDecoration(
+    //             color: Colors.white,
+    //             shape: BoxShape.circle,
+    //             border: Border.all(color: Colors.white, width: 2),
+    //           ),
+    //           child: Icon(Icons.person, color: Colors.blue[700], size: 35),
+    //         ),
+    //         horizontalSpace(10.w),
+    //         Column(
+    //           crossAxisAlignment: CrossAxisAlignment.start,
+    //           children: [
+    //             Text(
+    //               'Rey Ronald',
+    //               style: TextStyle(
+    //                 fontSize: 16,
+    //                 fontWeight: FontWeight.bold,
+    //                 color: Colors.white,
+    //               ),
+    //             ),
+    //             const SizedBox(height: 4),
+    //             Text(
+    //               'Petugas Pembaca Meter',
+    //               style: TextStyle(fontSize: 14, color: Colors.white70),
+    //             ),
+    //           ],
+    //         ),
+    //       ],
+    //     ),
+    //     verticalSpace(20.h),
+    //     _buildReadingPeriod(),
+    //   ],
+    // ),
+    // );
+
+    final width = context.width;
+    final height = context.height;
+
+    return Stack(
+      children: [
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            height: height * 0.3,
+            clipBehavior: Clip.hardEdge,
+            decoration: BoxDecoration(
+              color: primary500Base,
+
+              // gradient: RadialGradient(
+              //   center: const Alignment(-1.5, 1),
+              //   radius: 0.9,
+              //   focal: const Alignment(-1.5, 1),
+              //   colors: [primary500Base],
+              // ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -262,6 +629,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildStatItem(String label, String value) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
@@ -289,18 +657,18 @@ class _HomePageState extends State<HomePage> {
       children: [
         GestureDetector(
           onTap: () {
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(builder: (context) => const DaftarRayonPage()),
-            // );
             context.pushNamed(Routes.daftarRayonPage);
           },
           child: Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: primary500Base,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: primary500Base),
+            clipBehavior: Clip.antiAlias,
+            decoration: ShapeDecoration(
+              color: const Color(
+                0xFF2B3499,
+              ) /* Color-Brand-color-Primary-Primary-5 */,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -310,13 +678,16 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-        verticalSpace(10.h),
+        verticalSpace(12.h),
         Text(
           'Daftar Rayon',
+          textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 14.sp,
+            color: const Color(0xFF131313) /* Color-Base-color-Text-Text-6 */,
+            fontSize: 14,
+            fontFamily: 'Inter',
             fontWeight: FontWeight.w500,
-            color: text500Base,
+            height: 1.14,
           ),
         ),
       ],
@@ -328,18 +699,18 @@ class _HomePageState extends State<HomePage> {
       children: [
         GestureDetector(
           onTap: () {
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(builder: (context) => const LastDigitPage()),
-            // );
             context.pushNamed(Routes.lastDigitPage);
           },
           child: Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: primary500Base,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: primary500Base),
+            clipBehavior: Clip.antiAlias,
+            decoration: ShapeDecoration(
+              color: const Color(
+                0xFF2B3499,
+              ) /* Color-Brand-color-Primary-Primary-5 */,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -347,13 +718,16 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-        verticalSpace(10.h),
+        verticalSpace(12.h),
         Text(
           'Last Digit',
+          textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 14.sp,
+            color: const Color(0xFF131313) /* Color-Base-color-Text-Text-6 */,
+            fontSize: 14,
+            fontFamily: 'Inter',
             fontWeight: FontWeight.w500,
-            color: text500Base,
+            height: 1.14,
           ),
         ),
       ],
@@ -365,19 +739,18 @@ class _HomePageState extends State<HomePage> {
       children: [
         GestureDetector(
           onTap: () {
-            // Tambahkan navigasi untuk scan di sini jika diperlukan
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(builder: (context) => ScanPage()),
-            // );
             context.pushNamed(Routes.scanPage);
           },
           child: Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: primary500Base,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: primary500Base),
+            clipBehavior: Clip.antiAlias,
+            decoration: ShapeDecoration(
+              color: const Color(
+                0xFF2B3499,
+              ) /* Color-Brand-color-Primary-Primary-5 */,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -385,13 +758,16 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-        verticalSpace(10.h),
+        verticalSpace(12.h),
         Text(
           'Scan',
+          textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 14.sp,
+            color: const Color(0xFF131313) /* Color-Base-color-Text-Text-6 */,
+            fontSize: 14,
+            fontFamily: 'Inter',
             fontWeight: FontWeight.w500,
-            color: text500Base,
+            height: 1.14,
           ),
         ),
       ],

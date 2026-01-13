@@ -1,10 +1,17 @@
+import 'package:baca_meter/core/presentation/commons/language/language.dart';
 import 'package:baca_meter/core/presentation/commons/themes/color.dart';
+import 'package:baca_meter/core/presentation/commons/themes/text_styel.dart';
 import 'package:baca_meter/core/presentation/page/home/home_page.dart';
 import 'package:baca_meter/core/presentation/page/management_data/management_data_page.dart';
 import 'package:baca_meter/core/presentation/page/profile/profile_page.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:remixicon/remixicon.dart';
+
+import '../../commons/extensions/context_extension.dart';
+import '../../commons/methods/methods.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -33,12 +40,16 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    final extraSpace = 20.h; // 👈 tambahan ruang di bawah bottom bar
+    if (context.isPhone) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    }
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: Stack(
-        children: [
+      body:
           // Halaman utama
           SafeArea(
             bottom: false,
@@ -54,40 +65,29 @@ class _MainPageState extends State<MainPage> {
             ),
           ),
 
-          // Layer putih di bagian bawah (termasuk extra space)
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height:
-                80.h + bottomPadding + extraSpace, // 👈 tambahkan extraSpace
-            child: Container(color: baseWhite),
-          ),
-
-          // Bottom navigation bar (naikkan agar ada jarak di bawahnya)
-          Positioned(
-            bottom: bottomPadding + extraSpace, // 👈 turun sejauh extraSpace
-            left: 0,
-            right: 0,
-            child: _buildBottomNavBar(),
-          ),
-        ],
+      bottomNavigationBar: SafeArea(
+        bottom: defaultTargetPlatform == TargetPlatform.android ? true : false,
+        child: Container(
+          color: Colors.white, // ⬅️ background area bawah
+          child: _buildBottomNavBar(),
+        ),
       ),
     );
   }
 
   Widget _buildBottomNavBar() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
-      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
-      decoration: BoxDecoration(
-        color: baseWhite,
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
+      margin: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 16.h),
+      padding: EdgeInsets.symmetric(vertical: 12.h),
+      decoration: ShapeDecoration(
+        color: Colors.white /* Color-Base-color-Background-Bg-white */,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shadows: [
           BoxShadow(
-            color: baseBlack.withValues(alpha: 0.11),
-            blurRadius: 10,
-            offset: const Offset(0, -4),
+            color: Color(0x1E636363),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+            spreadRadius: 0,
           ),
         ],
       ),
@@ -115,15 +115,14 @@ class _MainPageState extends State<MainPage> {
                   size: 24,
                   color: isSelected ? primary500Base : text300,
                 ),
-                const SizedBox(height: 4),
+                verticalSpace(5.h),
                 ...item.title.map(
                   (line) => Text(
                     line,
                     style: TextStyle(
                       fontSize: 12.sp,
-                      fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.normal,
+                      fontWeight: isSelected ? semiBold : medium,
+                      fontFamily: 'Inter',
                       color: isSelected ? primary500Base : text300,
                     ),
                     textAlign: TextAlign.center,
@@ -139,17 +138,17 @@ class _MainPageState extends State<MainPage> {
 
   List<NavBarItem> get _navBarItems => [
     NavBarItem(
-      title: const ['Home'],
+      title: [Language.home],
       icon: Remix.home_6_fill,
       selectedIcon: Remix.home_6_fill,
     ),
     NavBarItem(
-      title: const ['Manajemen Data'],
+      title: [Language.manajemenData],
       icon: Remix.folders_fill,
       selectedIcon: Remix.folders_fill,
     ),
     NavBarItem(
-      title: const ['Profile'],
+      title: [Language.profile],
       icon: Remix.user_3_fill,
       selectedIcon: Remix.user_3_fill,
     ),
