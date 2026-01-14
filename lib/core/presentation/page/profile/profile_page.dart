@@ -1,8 +1,14 @@
+import 'package:baca_meter/core/presentation/commons/language/language.dart';
 import 'package:baca_meter/core/presentation/commons/methods/methods.dart';
 import 'package:baca_meter/core/presentation/commons/themes/color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:remixicon/remixicon.dart';
+
+import '../../commons/extensions/context_extension.dart';
+import '../../commons/routes/routes.dart';
+import '../../commons/themes/text_styel.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -10,220 +16,248 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: baseWhite,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Stack(
           children: [
-            // Background Biru (Header)
-            Container(
-              width: double.infinity,
-              height: 180.h,
-              decoration: BoxDecoration(
-                color: primary500Base,
-                image: const DecorationImage(
-                  image: AssetImage('assets/icon/home/ic_appbar.png'),
-                  fit: BoxFit.contain,
-                  alignment: Alignment.centerRight,
-                ),
-              ),
-            ),
+            // Background Biru
+            _buildBackground(context),
 
-            // Konten Utama - di BELAKANG avatar
-            Padding(
-              padding: EdgeInsets.only(top: 120.h),
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: baseWhite,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(20.r),
-                    topRight: Radius.circular(20.r),
-                  ),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.all(16.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      verticalSpace(40.h),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Rev Ronald',
-                            style: TextStyle(
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.bold,
-                              color: text500Base,
-                            ),
-                          ),
-                          verticalSpace(4.h),
-                          Text(
-                            'Petugas Pembaca Meter',
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              color: text400,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      verticalSpace(24.h),
-
-                      Text(
-                        'Pengaturan',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.bold,
-                          color: text500Base,
-                        ),
-                      ),
-                      verticalSpace(16.h),
-
-                      // Tombol Hapus Data Hasil Baca
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16.w,
-                          vertical: 12.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12.r),
-                          border: Border.all(color: baseSection),
-                        ),
-                        child: Row(
-                          children: [
-                            // Container lingkaran untuk icon
-                            Container(
-                              width: 32.w,
-                              height: 32.h,
-                              decoration: BoxDecoration(
-                                color: error100,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Center(
-                                child: Icon(
-                                  Remix.delete_bin_6_fill,
-                                  color: error500,
-                                  size: 18,
-                                ),
-                              ),
-                            ),
-                            horizontalSpace(12.w),
-                            Text(
-                              'Hapus Data Hasil Baca',
-                              style: TextStyle(
-                                fontSize: 14.sp,
-                                color: text500Base,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      verticalSpace(20.h),
-
-                      // Tombol Keluar
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(vertical: 12.h),
-                        decoration: BoxDecoration(
-                          color: Color(0xFFFF7A66),
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Remix.logout_box_line,
-                              color: baseWhite,
-                              size: 20,
-                            ),
-                            horizontalSpace(8.w),
-                            Text(
-                              'Keluar',
-                              style: TextStyle(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.bold,
-                                color: text100,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Spacer untuk memberi ruang antara konten dan footer
-                      Expanded(child: SizedBox.shrink()),
-
-                      // Footer "Powered by MKP" - dengan margin bawah untuk menghindari navbar
-                      Container(
-                        margin: EdgeInsets.only(bottom: 80.h),
-                        child: Align(
-                          alignment: Alignment.center,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Powered by',
-                                style: TextStyle(
-                                  fontSize: 10.sp,
-                                  color: text600,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              verticalSpace(4.h),
-                              Image.asset(
-                                'assets/icon/login/ic_logo_primary_mkp.png',
-                                width: 85.w,
-                                height: 24.h,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      verticalSpace(20.h),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // Avatar "RR" - DI DEPAN konten utama
+            // content
             Positioned(
-              top: 80.h,
+              top: context.height * 0.2 - 24, // 🔑 naik 24px
+              left: 0,
+              right: 0,
+              child: _buildContent(context),
+            ),
+
+            // 🔥 RR BOX
+            Positioned(
+              top:
+                  context.height * 0.2 - 24 - 35, // 🔑 naik setengah tinggi box
               left: 16.w,
               child: Container(
-                width: 80.w,
-                height: 80.h,
-                padding: EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: baseWhite,
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Container(
-                  width: 70.w,
-                  height: 70.h,
-                  decoration: BoxDecoration(
-                    color: primary100,
-                    borderRadius: BorderRadius.circular(12.r),
+                width: 80,
+                height: 80,
+                clipBehavior: Clip.antiAlias,
+                decoration: ShapeDecoration(
+                  color: primary100,
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(width: 4, color: Colors.white),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Center(
-                    child: Text(
-                      'RR',
-                      style: TextStyle(
-                        fontSize: 24.sp,
-                        fontWeight: FontWeight.bold,
-                        color: primary500Base,
-                      ),
+                ),
+                child: Center(
+                  child: Text(
+                    'RR',
+                    style: TextStyle(
+                      color: primary500Base,
+                      fontSize: 28.sp,
+                      fontFamily: 'Inter',
+                      fontWeight: bold,
                     ),
                   ),
                 ),
               ),
             ),
+
+            // Powered By MKP
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 16.h, 
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    Language.poweredBy,
+                    style: TextStyle(
+                      color: text700,
+                      fontSize: 10.sp,
+                      fontFamily: 'Inter',
+                      fontWeight: semiBold,
+                    ),
+                  ),
+                  verticalSpace(8.h),
+                  Image.asset(
+                    'assets/icon/login/ic_logo_primary_mkp.png',
+                    width: 85.w,
+                    height: 24.h,
+                    fit: BoxFit.contain,
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildBackground(BuildContext context) {
+    final width = context.width;
+    final height = context.height;
+    return Stack(
+      children: [
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            height: height * 0.2,
+            clipBehavior: Clip.hardEdge,
+            decoration: BoxDecoration(color: primary500Base),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Image.asset(
+                    'assets/icon/home/ic_appbar.png',
+                    width: width * 0.5,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.only(
+        top: 50.h, // 🔑 sesuai permintaan
+        left: 16.w,
+        right: 16.w,
+      ),
+      decoration: ShapeDecoration(
+        color: Colors.white /* Color-Base-color-Background-Bg-white */,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Rey Ronald',
+            style: TextStyle(
+              color: text700,
+              fontSize: 20.sp,
+              fontFamily: 'Inter',
+              fontWeight: bold,
+            ),
+          ),
+          verticalSpace(4.h),
+          Text(
+            'Petugas Pembaca Meter',
+            style: TextStyle(
+              color: text400,
+              fontSize: 14.sp,
+              fontFamily: 'Inter',
+              fontWeight: regular,
+            ),
+          ),
+          verticalSpace(24.h),
+          Text(
+            Language.pengaturan,
+            style: TextStyle(
+              color: text400,
+              fontSize: 14.sp,
+              fontFamily: 'Inter',
+              fontWeight: medium,
+            ),
+          ),
+          verticalSpace(12.h),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+            decoration: ShapeDecoration(
+              shape: RoundedRectangleBorder(
+                side: BorderSide(width: 1, color: borderDefault),
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              spacing: 12.w,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  clipBehavior: Clip.antiAlias,
+                  decoration: ShapeDecoration(
+                    color: const Color(
+                      0xFFFFEADA,
+                    ) /* Color-System-color-Error-error-1 */,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(80),
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Remix.delete_bin_6_fill,
+                      color: error500,
+                      size: 18,
+                    ),
+                  ),
+                ),
+                Text(
+                  Language.hapusHasilBaca,
+                  style: TextStyle(
+                    color: text700,
+                    fontSize: 14.sp,
+                    fontFamily: 'Inter',
+                    fontWeight: medium,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          verticalSpace(24.h),
+          GestureDetector(
+            onTap: () {
+              context.goNamed(Routes.loginPage);
+            },
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              decoration: ShapeDecoration(
+                color: error800,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: 10.w,
+                children: [
+                  Icon(Remix.logout_box_line, color: baseWhite, size: 20),
+                  Text(
+                    Language.keluar,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontFamily: 'Inter',
+                      fontWeight: medium,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
