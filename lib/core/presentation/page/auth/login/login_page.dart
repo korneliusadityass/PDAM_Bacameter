@@ -673,7 +673,7 @@ class _LoginPageState extends State<LoginPage> {
           child: SingleChildScrollView(
             physics: const ScrollPhysics(),
             child: Container(
-              padding: EdgeInsets.all(20.w),
+              padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.only(
@@ -682,13 +682,11 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Header hanya untuk bottom sheet
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
                         Language.pengaturan,
@@ -700,14 +698,9 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
 
-                      IconButton(
-                        onPressed: () => context.pop(),
-                        icon: Icon(
-                          Remix.close_fill,
-                          color: baseBlack,
-                          size: 24,
-                        ),
-                        padding: EdgeInsets.zero,
+                      GestureDetector(
+                        onTap: () => context.pop(),
+                        child: Icon(Remix.close_line, size: 24),
                       ),
                     ],
                   ),

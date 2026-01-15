@@ -419,162 +419,167 @@ class _LastDigitPageState extends State<LastDigitPage> {
   }
 
   Widget _buildCustomKeyboard() {
-    return Column(
-      children: [
-        // Baris 1
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            // Expanded(child: _buildNumberButton('1')),
-            Expanded(
-              child: CustomKeyboardButton(
-                label: '1',
-                borderColor: borderDark,
-                onTap: (value) {
-                  _setValueKeyboard(value);
-                },
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.only(top: 10.h),
+      color: baseWhite,
+      child: Column(
+        children: [
+          // Baris 1
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              // Expanded(child: _buildNumberButton('1')),
+              Expanded(
+                child: CustomKeyboardButton(
+                  label: '1',
+                  borderColor: borderDark,
+                  onTap: (value) {
+                    _setValueKeyboard(value);
+                  },
+                ),
               ),
-            ),
 
-            horizontalSpace(12.w),
-            Expanded(
-              child: CustomKeyboardButton(
-                label: '2',
-                borderColor: borderDark,
-                onTap: (value) {
-                  _setValueKeyboard(value);
-                },
+              horizontalSpace(12.w),
+              Expanded(
+                child: CustomKeyboardButton(
+                  label: '2',
+                  borderColor: borderDark,
+                  onTap: (value) {
+                    _setValueKeyboard(value);
+                  },
+                ),
               ),
-            ),
-            horizontalSpace(12.w),
-            Expanded(
-              child: CustomKeyboardButton(
-                label: '3',
-                borderColor: borderDark,
-                onTap: (value) {
-                  _setValueKeyboard(value);
-                },
+              horizontalSpace(12.w),
+              Expanded(
+                child: CustomKeyboardButton(
+                  label: '3',
+                  borderColor: borderDark,
+                  onTap: (value) {
+                    _setValueKeyboard(value);
+                  },
+                ),
               ),
-            ),
-          ],
-        ),
-        verticalSpace(12.h),
+            ],
+          ),
+          verticalSpace(12.h),
 
-        // Baris 2
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Expanded(
-              child: CustomKeyboardButton(
-                label: '4',
-                borderColor: borderDark,
-                onTap: (value) {
-                  _setValueKeyboard(value);
-                },
+          // Baris 2
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Expanded(
+                child: CustomKeyboardButton(
+                  label: '4',
+                  borderColor: borderDark,
+                  onTap: (value) {
+                    _setValueKeyboard(value);
+                  },
+                ),
               ),
-            ),
-            horizontalSpace(12.w),
-            Expanded(
-              child: CustomKeyboardButton(
-                label: '5',
-                borderColor: borderDark,
-                onTap: (value) {
-                  _setValueKeyboard(value);
-                },
+              horizontalSpace(12.w),
+              Expanded(
+                child: CustomKeyboardButton(
+                  label: '5',
+                  borderColor: borderDark,
+                  onTap: (value) {
+                    _setValueKeyboard(value);
+                  },
+                ),
               ),
-            ),
-            horizontalSpace(12.w),
-            Expanded(
-              child: CustomKeyboardButton(
-                label: '6',
-                borderColor: borderDark,
-                onTap: (value) {
-                  _setValueKeyboard(value);
-                },
+              horizontalSpace(12.w),
+              Expanded(
+                child: CustomKeyboardButton(
+                  label: '6',
+                  borderColor: borderDark,
+                  onTap: (value) {
+                    _setValueKeyboard(value);
+                  },
+                ),
               ),
-            ),
-          ],
-        ),
-        verticalSpace(12.h),
+            ],
+          ),
+          verticalSpace(12.h),
 
-        // Baris 3
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Expanded(
-              child: CustomKeyboardButton(
-                label: '7',
-                borderColor: borderDark,
-                onTap: (value) {
-                  _setValueKeyboard(value);
-                },
+          // Baris 3
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Expanded(
+                child: CustomKeyboardButton(
+                  label: '7',
+                  borderColor: borderDark,
+                  onTap: (value) {
+                    _setValueKeyboard(value);
+                  },
+                ),
               ),
-            ),
-            horizontalSpace(12.w),
-            Expanded(
-              child: CustomKeyboardButton(
-                label: '8',
-                borderColor: borderDark,
-                onTap: (value) {
-                  _setValueKeyboard(value);
-                },
+              horizontalSpace(12.w),
+              Expanded(
+                child: CustomKeyboardButton(
+                  label: '8',
+                  borderColor: borderDark,
+                  onTap: (value) {
+                    _setValueKeyboard(value);
+                  },
+                ),
               ),
-            ),
-            horizontalSpace(12.w),
-            Expanded(
-              child: CustomKeyboardButton(
-                label: '9',
-                borderColor: borderDark,
-                onTap: (value) {
-                  _setValueKeyboard(value);
-                },
+              horizontalSpace(12.w),
+              Expanded(
+                child: CustomKeyboardButton(
+                  label: '9',
+                  borderColor: borderDark,
+                  onTap: (value) {
+                    _setValueKeyboard(value);
+                  },
+                ),
               ),
-            ),
-          ],
-        ),
-        verticalSpace(12.h),
+            ],
+          ),
+          verticalSpace(12.h),
 
-        // Baris 4 (Clear, 0, Submit)
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Expanded(
-              child: CustomKeyboardButton(
-                label: 'Clear',
-                backgroundColor: primary100,
-                textColor: primary500Base,
-                onTap: (value) {
-                  setState(() {
-                    _inputValue = '';
-                    _searchResult = null;
-                  });
-                },
+          // Baris 4 (Clear, 0, Submit)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Expanded(
+                child: CustomKeyboardButton(
+                  label: 'Clear',
+                  backgroundColor: primary100,
+                  textColor: primary500Base,
+                  onTap: (value) {
+                    setState(() {
+                      _inputValue = '';
+                      _searchResult = null;
+                    });
+                  },
+                ),
               ),
-            ),
-            horizontalSpace(12.w),
-            Expanded(
-              child: CustomKeyboardButton(
-                label: '0',
-                borderColor: borderDark,
-                onTap: (value) {
-                  _setValueKeyboard(value);
-                },
+              horizontalSpace(12.w),
+              Expanded(
+                child: CustomKeyboardButton(
+                  label: '0',
+                  borderColor: borderDark,
+                  onTap: (value) {
+                    _setValueKeyboard(value);
+                  },
+                ),
               ),
-            ),
-            horizontalSpace(12.w),
-            Expanded(
-              child: CustomKeyboardButton(
-                iconParam: Remix.arrow_right_s_line,
-                backgroundColor: primary500Base,
-                warnaIcons: baseWhite,
-                onTap: (value) {
-                  _doneSearch();
-                },
+              horizontalSpace(12.w),
+              Expanded(
+                child: CustomKeyboardButton(
+                  iconParam: Remix.arrow_right_s_line,
+                  backgroundColor: primary500Base,
+                  warnaIcons: baseWhite,
+                  onTap: (value) {
+                    _doneSearch();
+                  },
+                ),
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 

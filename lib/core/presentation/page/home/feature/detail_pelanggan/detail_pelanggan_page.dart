@@ -793,7 +793,8 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
           child: Image.file(
             imageFile,
             width: double.infinity,
-            fit: BoxFit.cover,
+            fit: BoxFit.fill,
+            height: context.height * 0.3,
             errorBuilder: (context, error, stackTrace) {
               return Container(
                 width: double.infinity,
