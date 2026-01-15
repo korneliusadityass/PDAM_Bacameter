@@ -33,9 +33,19 @@ class Language {
   static String importDatabase = 'Import Database';
   static String exportDatabase = 'Export Database';
   static String batalkan = 'Batalkan';
-  static String downloading =  'Downloading';
-  static String hapusHasilBaca =  'Hapus Data Hasil Baca';
-  static String keluar =  'Keluar';
-   
-    
+  static String downloading = 'Downloading';
+  static String hapusHasilBaca = 'Hapus Data Hasil Baca';
+  static String keluar = 'Keluar';
+  static String konfirmasi = 'Konfirmasi';
+  static String simpanHasilBaca = 'Simpan Hasil Baca';
+  static String angkaStan = 'Angka Stan';
+  static String masukkanAngkaStan =  'Masukkan Angka Stan';
+  static String kelainan =  'Kelainan';
+  static String masukkanKelainan =  'Masukkan Kelainan';
+  static String perubahanAtribut =  'Perubahan Atribut';
+  static String memo =  'Memo';
+  static String edit =  'Edit';
+
+
+  
 }

@@ -2,14 +2,21 @@ import 'dart:io';
 
 import 'package:baca_meter/core/presentation/commons/methods/methods.dart';
 import 'package:baca_meter/core/presentation/commons/themes/color.dart';
+import 'package:baca_meter/core/presentation/page/home/feature/detail_pelanggan/widget/dialog_option.dart';
 import 'package:baca_meter/core/presentation/page/home/feature/detail_pelanggan/widget/golongan_bottom.dart';
 import 'package:baca_meter/core/presentation/page/home/feature/detail_pelanggan/widget/mark_meter_bottom.dart';
 import 'package:baca_meter/core/presentation/page/home/feature/detail_pelanggan/widget/memo_bottom.dart';
 import 'package:baca_meter/core/presentation/widget/dashed/dased.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:remixicon/remixicon.dart';
+
+import '../../../../commons/extensions/context_extension.dart';
+import '../../../../commons/language/language.dart';
+import '../../../../commons/themes/constants.dart';
+import '../../../../commons/themes/text_styel.dart';
 
 class DetailPelangganPage extends StatefulWidget {
   const DetailPelangganPage({super.key});
@@ -34,110 +41,221 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
     return Scaffold(
       body: Stack(
         children: [
+          // // Konten utama yang menumpang di atas header — dibungkus GestureDetector
+          // Positioned(
+          //   top: 140,
+          //   left: 0,
+          //   right: 0,
+          //   bottom: 80.h,
+          //   child: Container(
+          //     alignment: Alignment.topCenter,
+          //     decoration: const BoxDecoration(
+          //       color: baseWhite,
+          //       borderRadius: BorderRadius.only(
+          //         topLeft: Radius.circular(20),
+          //         topRight: Radius.circular(20),
+          //       ),
+          //     ),
+          //     child: Padding(
+          //       padding: const EdgeInsets.all(16.0),
+          //       child: SingleChildScrollView(
+          //         child: Column(
+          //           crossAxisAlignment: CrossAxisAlignment.start,
+          //           children: [
+          //             _buildDetailPelanggan(),
+          //             verticalSpace(14.h),
+          //             _buildPemakaianSection(),
+          //             verticalSpace(14.h),
+          //             _buildKelainanSection(),
+          //             verticalSpace(14.h),
+          //             _buildPerubahanAtributSection(),
+          //             verticalSpace(14.h),
+          //             _buildRincianRekeningSection(),
+          //             verticalSpace(14.h),
+          //           ],
+          //         ),
+          //       ),
+          //     ),
+          //   ),
+          // ),
+
           // Background utama
-          Column(
-            children: [
-              // Header dengan background biru
-              _buildHeader(context),
-              // Konten utama - Expanded untuk mengisi sisa space
-              Expanded(child: Container(color: baseWhite)),
-            ],
-          ),
+          _buildBackground(context),
 
-          // Konten utama yang menumpang di atas header — dibungkus GestureDetector
-          Positioned(
-            top: 140,
-            left: 0,
-            right: 0,
-            bottom: 80.h,
-            child: Container(
-              alignment: Alignment.topCenter,
-              decoration: const BoxDecoration(
-                color: baseWhite,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildDetailPelanggan(),
-                      verticalSpace(14.h),
-                      _buildPemakaianSection(),
-                      verticalSpace(14.h),
-                      _buildKelainanSection(),
-                      verticalSpace(14.h),
-                      _buildPerubahanAtributSection(),
-                      verticalSpace(14.h),
-                      _buildRincianRekeningSection(),
-                      verticalSpace(14.h),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
+          _buildContent(context),
 
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              // color: baseWhite,
-              padding: EdgeInsets.all(16.w),
-              decoration: BoxDecoration(
-                color: baseWhite,
-                boxShadow: [
-                  BoxShadow(
-                    color: baseBlack.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, -2),
-                  ),
-                ],
-              ),
-              child: _buildSimpanButton(),
-            ),
-          ),
-
-          // SafeArea di atas stack untuk menghindari notch
-          const SafeArea(
-            top: true,
-            bottom: false,
-            left: false,
-            right: false,
-            child: SizedBox(),
-          ),
+          // Button Simpan
+          _buildButtonSave(),
         ],
       ),
     );
   }
 
-  Widget _buildSimpanButton() {
-    return Container(
-      width: double.infinity,
-      height: 50.h,
-      decoration: BoxDecoration(
-        color: primary500Base,
-        borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+  Widget _buildButtonSave() {
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+        decoration: BoxDecoration(
+          color: Colors.white /* Color-Base-color-Background-Bg-white */,
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x3364646F),
+              blurRadius: 29,
+              offset: Offset(0, 7),
+              spreadRadius: 0,
+            ),
+          ],
+        ),
+        child: _buildSimpanButton(),
       ),
-      child: Center(
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        // 🔥 AREA BACKGROUND
+        Expanded(
+          flex: 2, // tinggi relatif (background)
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: defaultMargin.w,
+              top: defaultMargin.h,
+              right: defaultMargin.w,
+            ),
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: () => context.pop(),
+                    child: Icon(
+                      Remix.arrow_left_line,
+                      color: baseWhite,
+                      size: 20,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      Language.konfirmasi,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20.sp,
+                        fontFamily: 'Inter',
+                        fontWeight: bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 8, // tinggi relatif (background)
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.only(
+              top: 24.h,
+              left: 16.w,
+              right: 16.w,
+              bottom: 16.h,
+            ),
+            clipBehavior: Clip.antiAlias,
+            decoration: ShapeDecoration(
+              color: Colors.white /* Color-Base-color-Background-Bg-white */,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
+              ),
+            ),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              scrollDirection: Axis.vertical,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildDetailPelanggan(),
+                  verticalSpace(16.h),
+                  _buildPemakaianSection(),
+                  verticalSpace(16.h),
+                  _buildKelainanSection(),
+                  verticalSpace(16.h),
+                  _buildPerubahanAtributSection(),
+                  verticalSpace(16.h),
+                  _buildRincianRekeningSection(),
+                  verticalSpace(150.h),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBackground(BuildContext context) {
+    final width = context.width;
+    final height = context.height;
+    return Stack(
+      children: [
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            height: height * 0.2,
+            clipBehavior: Clip.hardEdge,
+            decoration: BoxDecoration(color: primary500Base),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Image.asset(
+                    'assets/icon/home/ic_appbar.png',
+                    width: width * 0.5,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSimpanButton() {
+    return GestureDetector(
+      onTap: () => context.pop(),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        decoration: ShapeDecoration(
+          color: primary600,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
         child: Text(
-          'Simpan Hasil Baca',
+          Language.simpanHasilBaca,
+          textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.bold,
-            color: baseWhite,
+            color: Colors.white,
+            fontSize: 14.sp,
+            fontFamily: 'Inter',
+            fontWeight: medium,
           ),
         ),
       ),
@@ -189,11 +307,13 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
   Widget _buildDetailPelanggan() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: baseWhite,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: borderDark),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+      decoration: ShapeDecoration(
+        color: Colors.white /* Color-Base-color-Background-Bg-white */,
+        shape: RoundedRectangleBorder(
+          side: BorderSide(width: 1, color: borderDefault),
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,18 +321,22 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
           // Header "Detail Pelanggan"
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-            decoration: BoxDecoration(
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+            decoration: ShapeDecoration(
               color: primary100,
-              borderRadius: BorderRadius.circular(8.r),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             child: Center(
               child: Text(
                 'Detail Pelanggan',
+                textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.bold,
                   color: primary500Base,
+                  fontSize: 16.sp,
+                  fontFamily: 'Inter',
+                  fontWeight: bold,
                 ),
               ),
             ),
@@ -222,9 +346,13 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
 
           // Data Pelanggan
           _buildDataRow('Kode Pelanggan', '128290223'),
+          verticalSpace(12.h),
           _buildDataRow('Nama', 'Rey Ronald'),
+          verticalSpace(12.h),
           _buildDataRow('Alamat', 'BONTOMANAI'),
+          verticalSpace(12.h),
           _buildDataRow('Rayon / Gol', 'BONTOMANAI / NIAGA KECIL'),
+          verticalSpace(12.h),
           _buildDataRow('Total Tagihan', 'Rp. 0'),
         ],
       ),
@@ -233,46 +361,50 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
 
   // Widget untuk membuat baris data
   Widget _buildDataRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
-                color: text500Base,
-              ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: text700,
+              fontSize: 14.sp,
+              fontFamily: 'Inter',
+              fontWeight: semiBold,
             ),
           ),
-          Expanded(
-            flex: 3,
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w400,
-                color: text500Base,
-              ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: TextStyle(
+              color: text700,
+              fontSize: 14.sp,
+              fontFamily: 'Inter',
+              fontWeight: regular,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildPemakaianSection() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: baseWhite,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: borderDark),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+      decoration: ShapeDecoration(
+        color: Colors.white /* Color-Base-color-Background-Bg-white */,
+        shape: RoundedRectangleBorder(
+          side: BorderSide(
+            width: 1,
+            color: const Color(
+              0xFFE6E6E6,
+            ) /* Color-Base-color-Border-border-default */,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,13 +413,14 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
           Text(
             'Pemakaian',
             style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.bold,
-              color: text500Base,
+              color: text700,
+              fontSize: 16.sp,
+              fontFamily: 'Inter',
+              fontWeight: semiBold,
             ),
           ),
 
-          verticalSpace(16.h),
+          verticalSpace(12.h),
 
           // Bulan ini
           _buildBulanSection('Bulan ini', '1323', '89,5%', '377 m³'),
@@ -349,11 +482,13 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
   ) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: baseWhite,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: borderDark),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+      clipBehavior: Clip.antiAlias,
+      decoration: ShapeDecoration(
+        shape: RoundedRectangleBorder(
+          side: BorderSide(width: 1, color: borderDefault),
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -364,22 +499,25 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
               Text(
                 title,
                 style: TextStyle(
+                  color: text700,
                   fontSize: 14.sp,
-                  fontWeight: FontWeight.bold,
-                  color: text500Base,
+                  fontFamily: 'Inter',
+                  fontWeight: bold,
                 ),
               ),
               Icon(Remix.calendar_2_line, size: 24, color: primary500Base),
             ],
           ),
-          verticalSpace(8.h),
-          _buildDivider(),
-          verticalSpace(8.h),
+          verticalSpace(12.h),
+          // _buildDivider(),
+          Divider(height: 1, thickness: 1, color: borderDefault),
+          verticalSpace(12.h),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              Expanded(child: _buildInfoItem('Stan', stan)),
-              Expanded(child: _buildInfoItem('Persen', persen)),
-              Expanded(child: _buildInfoItem('Penggunaan', penggunaan)),
+              _buildInfoItem('Stan', stan),
+              _buildInfoItem('Persen', persen),
+              _buildInfoItem('Penggunaan', penggunaan),
             ],
           ),
         ],
@@ -390,23 +528,28 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
   // Widget untuk item info (Stan, Persen, Penggunaan)
   Widget _buildInfoItem(String label, String value) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
           label,
+          textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 10.sp,
-            fontWeight: FontWeight.w400,
             color: text400,
+            fontSize: 12.sp,
+            fontFamily: 'Inter',
+            fontWeight: regular,
           ),
         ),
-        verticalSpace(2.h),
+        verticalSpace(4.h),
         Text(
           value,
+          textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 12.sp,
-            fontWeight: FontWeight.w600,
-            color: text500Base,
+            color: text700,
+            fontSize: 16.sp,
+            fontFamily: 'Inter',
+            fontWeight: bold,
           ),
         ),
       ],
@@ -448,30 +591,82 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
     void showImageSourceDialog() {
       showDialog(
         context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Pilih Sumber Gambar'),
-            content: Text('Ambil foto dari:'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  pickImage(ImageSource.camera);
-                },
-                child: Text('Kamera'),
+        barrierDismissible: true,
+        builder: (context) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title
+                  Text(
+                    'Pilih Sumber Gambar',
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Inter',
+                    ),
+                  ),
+                  verticalSpace(8.h),
+
+                  // Subtitle
+                  const Text(
+                    'Ambil foto dari:',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                      fontFamily: 'Inter',
+                    ),
+                  ),
+                  verticalSpace(20.h),
+
+                  // Camera
+                  DialogOption(
+                    icon: Icons.camera_alt_outlined,
+                    label: 'Kamera',
+                    onTap: () {
+                      Navigator.pop(context);
+                      pickImage(ImageSource.camera);
+                    },
+                  ),
+
+                  verticalSpace(12.h),
+
+                  // Gallery
+                  DialogOption(
+                    icon: Icons.photo_library_outlined,
+                    label: 'Galeri',
+                    onTap: () {
+                      Navigator.pop(context);
+                      pickImage(ImageSource.gallery);
+                    },
+                  ),
+
+                  verticalSpace(20.h),
+
+                  // Cancel
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(foregroundColor: error600),
+                      child: Text(
+                        'Batal',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'Inter',
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  pickImage(ImageSource.gallery);
-                },
-                child: Text('Galeri'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Batal', style: TextStyle(color: error600)),
-              ),
-            ],
+            ),
           );
         },
       );
@@ -486,30 +681,34 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
             Text(
               title,
               style: TextStyle(
+                color: text700,
                 fontSize: 14.sp,
-                fontWeight: FontWeight.bold,
-                color: text500Base,
+                fontFamily: 'Inter',
+                fontWeight: regular,
               ),
             ),
             horizontalSpace(4.w),
             Text(
               '*Required',
               style: TextStyle(
+                color: const Color(
+                  0xFFDB3935,
+                ) /* Color-System-color-Error-error-6 */,
                 fontSize: 14.sp,
-                fontWeight: FontWeight.w400,
-                color: error600,
                 fontStyle: FontStyle.italic,
+                fontFamily: 'Inter',
+                fontWeight: regular,
               ),
             ),
           ],
         ),
-        verticalSpace(8.h),
+        verticalSpace(6.h),
 
         // Kotak Upload Foto
         GestureDetector(
           onTap: showImageSourceDialog,
           child: CustomPaint(
-            size: Size(double.infinity, 130.h),
+            // size: Size(double.infinity, 130.h),
             painter: DottedBorderPainter(
               color: borderDark,
               strokeWidth: 2,
@@ -519,10 +718,17 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
             ),
             child: Container(
               width: double.infinity,
-              height: 130.h,
-              decoration: BoxDecoration(
-                color: baseWhite,
-                borderRadius: BorderRadius.circular(12.r),
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 20.h),
+              clipBehavior: Clip.antiAlias,
+              decoration: ShapeDecoration(
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(
+                    width: 1,
+                    strokeAlign: BorderSide.strokeAlignCenter,
+                    color: borderDefault,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: selectedImage != null
                   ? _buildImagePreview(selectedImage)
@@ -531,8 +737,8 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
                       children: [
                         // Ikon Kamera dalam lingkaran
                         Container(
-                          width: 48,
-                          height: 48,
+                          width: 35.w,
+                          height: 35.h,
                           decoration: BoxDecoration(
                             color: baseSection,
                             shape: BoxShape.circle,
@@ -548,23 +754,26 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
                         // Teks "Ambil Foto Meteran"
                         Text(
                           subtitle,
+                          textAlign: TextAlign.center,
                           style: TextStyle(
+                            color: primary500Base,
                             fontSize: 14.sp,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2E3A8C),
+                            fontFamily: 'Inter',
+                            fontWeight: medium,
                           ),
                         ),
-                        verticalSpace(4.h),
+                        verticalSpace(8.h),
 
                         // Teks info file
                         Text(
                           description,
-                          style: TextStyle(
-                            fontSize: 10.sp,
-                            fontWeight: FontWeight.w400,
-                            color: Color(0xFF888888),
-                          ),
                           textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: text400,
+                            fontSize: 14.sp,
+                            fontFamily: 'Inter',
+                            fontWeight: regular,
+                          ),
                         ),
                       ],
                     ),
@@ -619,28 +828,37 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Angka Stan',
+          Language.angkaStan,
           style: TextStyle(
-            fontSize: 12.sp,
-            fontWeight: FontWeight.bold,
-            color: text500Base,
+            color: text700,
+            fontSize: 14.sp,
+            fontFamily: 'Inter',
+            fontWeight: medium,
           ),
         ),
         verticalSpace(8.h),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: baseWhite,
-            borderRadius: BorderRadius.circular(8.r),
-            border: Border.all(color: borderDark),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          clipBehavior: Clip.antiAlias,
+          decoration: ShapeDecoration(
+            shape: RoundedRectangleBorder(
+              side: BorderSide(
+                width: 1,
+                strokeAlign: BorderSide.strokeAlignCenter,
+                color: borderDefault,
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
           child: Text(
-            'Masukkan Angka Stan',
+            Language.masukkanAngkaStan,
+            textAlign: TextAlign.start,
             style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w400,
-              color: text400,
+              color: text300,
+              fontSize: 14.sp,
+              fontFamily: 'Inter',
+              fontWeight: regular,
             ),
           ),
         ),
@@ -660,11 +878,12 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
   Widget _buildKelainanSection() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: baseWhite,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: borderDark),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+      decoration: ShapeDecoration(
+        shape: RoundedRectangleBorder(
+          side: BorderSide(width: 1, color: borderDefault),
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -680,11 +899,12 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Kelainan',
+                  Language.kelainan,
                   style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.bold,
-                    color: text500Base,
+                    color: text700,
+                    fontSize: 16.sp,
+                    fontFamily: 'Inter',
+                    fontWeight: semiBold,
                   ),
                 ),
                 Icon(
@@ -692,7 +912,7 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
                       ? Remix.arrow_up_s_line
                       : Remix.arrow_down_s_line,
                   size: 24,
-                  color: baseBlack,
+                  color: text500Base,
                 ),
               ],
             ),
@@ -704,11 +924,12 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
 
             // Sub Judul "Kelainan"
             Text(
-              'Kelainan',
+              Language.kelainan,
               style: TextStyle(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.bold,
-                color: text500Base,
+                color: text700,
+                fontSize: 14.sp,
+                fontFamily: 'Inter',
+                fontWeight: medium,
               ),
             ),
 
@@ -717,19 +938,26 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
             // Input Field Kelainan
             Container(
               width: double.infinity,
-              height: 131.h,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              decoration: BoxDecoration(
-                color: baseWhite,
-                borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(color: borderDark),
+              height: 131,
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              clipBehavior: Clip.antiAlias,
+              decoration: ShapeDecoration(
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(
+                    width: 1,
+                    strokeAlign: BorderSide.strokeAlignCenter,
+                    color: borderDefault,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: Text(
-                'Masukkan Kelainan',
+                Language.masukkanKelainan,
                 style: TextStyle(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w400,
-                  color: text400,
+                  color: text300,
+                  fontSize: 14.sp,
+                  fontFamily: 'Inter',
+                  fontWeight: regular,
                 ),
               ),
             ),
@@ -742,11 +970,12 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
   Widget _buildPerubahanAtributSection() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: baseWhite,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: borderDark),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+      decoration: ShapeDecoration(
+        shape: RoundedRectangleBorder(
+          side: BorderSide(width: 1, color: borderDefault),
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -762,11 +991,12 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Perubahan Atribut',
+                  Language.perubahanAtribut,
                   style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.bold,
-                    color: text500Base,
+                    color: text700,
+                    fontSize: 16.sp,
+                    fontFamily: 'Inter',
+                    fontWeight: semiBold,
                   ),
                 ),
                 Icon(
@@ -774,7 +1004,7 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
                       ? Remix.arrow_up_s_line
                       : Remix.arrow_down_s_line,
                   size: 24,
-                  color: baseBlack,
+                  color: text500Base,
                 ),
               ],
             ),
@@ -787,16 +1017,17 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
             // Bagian Memo pertama
             _buildMemoItem('Memo', 'Tidak Ada Data'),
 
-            verticalSpace(12.h),
+            verticalSpace(8.h),
 
             // Bagian Golongan
             _buildAttributeItemGolongan('Golongan', 'SU'),
 
-            verticalSpace(12.h),
+            verticalSpace(8.h),
 
             // Bagian MRK. Meter
             _buildAttributeItemMrkMeter('MRK. Meter', 'Ataris'),
 
+            // _buildAttributeItemGolongan('MRK. Meter', 'SU'),
             verticalSpace(8.h),
           ],
         ],
@@ -812,46 +1043,48 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
         Text(
           title,
           style: TextStyle(
+            color: text700,
             fontSize: 14.sp,
-            fontWeight: FontWeight.bold,
-            color: text500Base,
+            fontFamily: 'Inter',
+            fontWeight: medium,
           ),
         ),
         verticalSpace(8.h),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Text(
-              content.isEmpty ? 'Edit' : content,
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w400,
-                color: text400,
+            Expanded(
+              child: Text(
+                content.isEmpty ? 'Tidak Ada Data' : content,
+                style: TextStyle(
+                  color: text400,
+                  fontSize: 14.sp,
+                  fontFamily: 'Inter',
+                  fontWeight: regular,
+                ),
               ),
             ),
+            horizontalSpace(6.w),
             GestureDetector(
               onTap: () {
                 showEditMemoBottomSheet(context);
               },
               child: Container(
-                width: 74.w,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                decoration: ShapeDecoration(
                   color: baseSection,
-                  borderRadius: BorderRadius.circular(8.r),
-                  border: Border.all(color: borderDark),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                child: Center(
-                  child: Text(
-                    'Memo',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w400,
-                      color: primary500Base,
-                    ),
+                child: Text(
+                  Language.memo,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: primary500Base,
+                    fontSize: 14.sp,
+                    fontFamily: 'Inter',
+                    fontWeight: medium,
                   ),
                 ),
               ),
@@ -870,49 +1103,52 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
         Text(
           title,
           style: TextStyle(
+            color: text700,
             fontSize: 14.sp,
-            fontWeight: FontWeight.bold,
-            color: text500Base,
+            fontFamily: 'Inter',
+            fontWeight: medium,
           ),
         ),
         verticalSpace(8.h),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w400,
-                color: text400,
+            Expanded(
+              child: Text(
+                value,
+                style: TextStyle(
+                  color: text400,
+                  fontSize: 14.sp,
+                  fontFamily: 'Inter',
+                  fontWeight: regular,
+                ),
               ),
             ),
+            horizontalSpace(6.w),
             GestureDetector(
               onTap: () {
                 showPilihGolonganBottomSheet(context);
               },
               child: Container(
-                width: 92.w,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                decoration: ShapeDecoration(
                   color: baseSection,
-                  borderRadius: BorderRadius.circular(8.r),
-                  border: Border.all(color: borderDark),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Remix.pencil_fill, size: 18, color: primary500Base),
-                    horizontalSpace(4.w),
+                    Icon(Remix.pencil_fill, size: 24, color: primary500Base),
+                    horizontalSpace(10.w),
                     Text(
-                      'Edit',
+                      Language.edit,
                       style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w400,
                         color: primary500Base,
+                        fontSize: 14.sp,
+                        fontFamily: 'Inter',
+                        fontWeight: medium,
                       ),
                     ),
                   ],
@@ -932,49 +1168,52 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
         Text(
           title,
           style: TextStyle(
+            color: text700,
             fontSize: 14.sp,
-            fontWeight: FontWeight.bold,
-            color: text500Base,
+            fontFamily: 'Inter',
+            fontWeight: medium,
           ),
         ),
         verticalSpace(8.h),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w400,
-                color: text400,
+            Expanded(
+              child: Text(
+                value,
+                style: TextStyle(
+                  color: text400,
+                  fontSize: 14.sp,
+                  fontFamily: 'Inter',
+                  fontWeight: regular,
+                ),
               ),
             ),
+            horizontalSpace(6.w),
             GestureDetector(
               onTap: () {
                 showPilihMrkMeterBottomSheet(context);
               },
               child: Container(
-                width: 92.w,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                decoration: ShapeDecoration(
                   color: baseSection,
-                  borderRadius: BorderRadius.circular(8.r),
-                  border: Border.all(color: borderDark),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Remix.pencil_fill, size: 18, color: primary500Base),
-                    horizontalSpace(4.w),
+                    Icon(Remix.pencil_fill, size: 24, color: primary500Base),
+                    horizontalSpace(10.w),
                     Text(
-                      'Edit',
+                      Language.edit,
                       style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w400,
                         color: primary500Base,
+                        fontSize: 14.sp,
+                        fontFamily: 'Inter',
+                        fontWeight: medium,
                       ),
                     ),
                   ],
@@ -990,11 +1229,12 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
   Widget _buildRincianRekeningSection() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: baseWhite,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: borderDark),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+      decoration: ShapeDecoration(
+        shape: RoundedRectangleBorder(
+          side: BorderSide(width: 1, color: borderDefault),
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1012,9 +1252,10 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
                 Text(
                   'Rincian Rekening',
                   style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.bold,
-                    color: text500Base,
+                    color: text700,
+                    fontSize: 16.sp,
+                    fontFamily: 'Inter',
+                    fontWeight: semiBold,
                   ),
                 ),
                 Icon(
@@ -1022,7 +1263,7 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
                       ? Remix.arrow_up_s_line
                       : Remix.arrow_down_s_line,
                   size: 24,
-                  color: baseBlack,
+                  color: text500Base,
                 ),
               ],
             ),
@@ -1040,9 +1281,11 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
             _buildRincianItem('Pelayanan', 'Rp. 0'),
             _buildRincianItem('Air Limbah', 'Rp. 0'),
             _buildRincianItem('Materai', 'Rp. 0'),
-            _buildDivider(),
+            verticalSpace(16.h),
 
-            verticalSpace(12.h),
+            // _buildDivider(),
+            Divider(height: 1, thickness: 1, color: borderDefault),
+            verticalSpace(16.h),
 
             // Total
             _buildTotalItem(),
@@ -1054,29 +1297,28 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
 
   // Widget untuk item rincian
   Widget _buildRincianItem(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w400,
-              color: text500Base,
-            ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: text700,
+            fontSize: 14.sp,
+            fontFamily: 'Inter',
+            fontWeight: medium,
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w400,
-              color: text500Base,
-            ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            color: text700,
+            fontSize: 14.sp,
+            fontFamily: 'Inter',
+            fontWeight: medium,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -1088,17 +1330,19 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
         Text(
           'Total',
           style: TextStyle(
+            color: text700,
             fontSize: 20.sp,
-            fontWeight: FontWeight.bold,
-            color: text500Base,
+            fontFamily: 'Inter',
+            fontWeight: bold,
           ),
         ),
         Text(
           'Rp. 15.000',
           style: TextStyle(
+            color: text700,
             fontSize: 20.sp,
-            fontWeight: FontWeight.bold,
-            color: text500Base,
+            fontFamily: 'Inter',
+            fontWeight: bold,
           ),
         ),
       ],

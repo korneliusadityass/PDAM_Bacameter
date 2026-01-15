@@ -1,11 +1,16 @@
 import 'package:baca_meter/core/presentation/commons/methods/methods.dart';
 import 'package:baca_meter/core/presentation/commons/themes/color.dart';
+import 'package:baca_meter/core/presentation/commons/themes/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:remixicon/remixicon.dart';
 
+import '../../../../commons/extensions/context_extension.dart';
+import '../../../../commons/language/language.dart';
 import '../../../../commons/routes/routes.dart';
+import '../../../../commons/themes/text_styel.dart';
+import '../../../../widget/custom_keyboard/custom_keyboard.dart';
 
 class LastDigitPage extends StatefulWidget {
   const LastDigitPage({super.key});
@@ -48,142 +53,156 @@ class _LastDigitPageState extends State<LastDigitPage> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background utama
-          Column(
-            children: [
-              // Header dengan background biru
-              _buildHeader(context),
-              // Area putih di bawah header
-              Expanded(child: Container(color: baseWhite)),
-            ],
-          ),
-
-          // Konten utama yang menumpang di atas header
-          Positioned(
-            top: 140.h,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: GestureDetector(
-              onTap: () {
-                if (_showKeyboard) {
-                  setState(() {
-                    _showKeyboard = false;
-                  });
-                }
-              },
-              behavior: HitTestBehavior.opaque,
-              child: Container(
-                alignment: Alignment.topCenter,
-                decoration: const BoxDecoration(
-                  color: baseWhite,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                  ),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 16.h),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Judul Riwayat Pencarian / Pencarian
-                      Text(
-                        _inputValue.length == 3
-                            ? 'Pencarian'
-                            : 'Riwayat Pencarian',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.bold,
-                          color: text500Base,
-                        ),
-                      ),
-                      verticalSpace(4.h),
-
-                      _inputValue.length == 3
-                          ? _buildSearchResult()
-                          : Expanded(
-                              // ⬅️ Hanya riwayat yang pakai Expanded
-                              child: _buildSearchHistory(),
-                            ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
+          _buildBackground(context),
+          _buildContent(context),
 
           // Search Input dan Custom Keyboard Floating - dijadikan satu
-          Positioned(
-            bottom: 16.h,
-            left: 16.w,
-            right: 16.w,
-            child: Column(
-              children: [
-                // Search Input
-                _buildSearchInput(context),
-                verticalSpace(10.h),
-
-                // Custom Keyboard (muncul saat _showKeyboard == true)
-                if (_showKeyboard) ...[
-                  verticalSpace(10.h),
-                  _buildCustomKeyboard(),
-                ],
-              ],
-            ),
-          ),
-
-          // SafeArea di atas stack untuk menghindari notch
-          const SafeArea(
-            top: true,
-            bottom: false,
-            left: false,
-            right: false,
-            child: SizedBox(),
-          ),
+          _searchLastDigit(),
         ],
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 200.h,
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: primary500Base,
-        image: const DecorationImage(
-          image: AssetImage('assets/icon/home/ic_appbar.png'),
-          fit: BoxFit.contain,
-          alignment: Alignment.centerRight,
-        ),
-      ),
+  Widget _searchLastDigit() {
+    return Positioned(
+      bottom: 16.h,
+      left: 16.w,
+      right: 16.w,
       child: Column(
         children: [
-          verticalSpace(60.h),
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Icon(Remix.arrow_left_line, color: baseWhite, size: 20),
-              ),
-              Expanded(
-                child: Center(
-                  child: Text(
-                    'Last Digit',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+          // Search Input
+          _buildSearchInput(context),
+
+          // Custom Keyboard (muncul saat _showKeyboard == true)
+          if (_showKeyboard) ...[verticalSpace(22.h), _buildCustomKeyboard()],
         ],
       ),
+    );
+  }
+
+  Widget _buildBackground(BuildContext context) {
+    final width = context.width;
+    final height = context.height;
+    return Stack(
+      children: [
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            height: height * 0.2,
+            clipBehavior: Clip.hardEdge,
+            decoration: BoxDecoration(color: primary500Base),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Image.asset(
+                    'assets/icon/home/ic_appbar.png',
+                    width: width * 0.5,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        // 🔥 AREA BACKGROUND
+        Expanded(
+          flex: 2, // tinggi relatif (background)
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: defaultMargin.w,
+              top: 16.h,
+              right: defaultMargin.w,
+            ),
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: () => context.pop(),
+                    child: Icon(
+                      Remix.arrow_left_line,
+                      color: baseWhite,
+                      size: 20,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      Language.lastDigit,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20.sp,
+                        fontFamily: 'Inter',
+                        fontWeight: bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 8, // tinggi relatif (background)
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.only(
+              top: 24.h,
+              left: 16.w,
+              right: 16.w,
+              bottom: 16.h,
+            ),
+            clipBehavior: Clip.antiAlias,
+            decoration: ShapeDecoration(
+              color: Colors.white /* Color-Base-color-Background-Bg-white */,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
+              ),
+            ),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              scrollDirection: Axis.vertical,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _inputValue.length == 3 ? 'Pencarian' : 'Riwayat Pencarian',
+                    style: TextStyle(
+                      color: text700,
+                      fontSize: 16.sp,
+                      fontFamily: 'Inter',
+                      fontWeight: bold,
+                    ),
+                  ),
+                  verticalSpace(16.h),
+
+                  _inputValue.length == 3
+                      ? _buildSearchResult()
+                      : _buildSearchHistory(),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -243,10 +262,6 @@ class _LastDigitPageState extends State<LastDigitPage> {
         // Simpan ke riwayat sebelum navigasi
         _addToSearchHistory(last3Digits, name, fullNumber);
 
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(builder: (context) => const DetailPelangganPage()),
-        // );
         context.pushNamed(Routes.detailPelangganPage);
       },
       child: Container(
@@ -319,17 +334,20 @@ class _LastDigitPageState extends State<LastDigitPage> {
         });
       },
       child: Container(
-        height: 48.h,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: BoxDecoration(
-          color: baseWhite,
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: borderDark),
-          boxShadow: [
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        decoration: ShapeDecoration(
+          color: Colors.white /* Color-Base-color-Background-Bg-white */,
+          shape: RoundedRectangleBorder(
+            side: BorderSide(width: 1, color: borderDefault),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          shadows: [
             BoxShadow(
-              color: baseBlack.withValues(alpha: 0.3),
+              color: Color(0x1E636363),
               blurRadius: 8,
-              offset: const Offset(0, 2),
+              offset: Offset(0, 2),
+              spreadRadius: 0,
             ),
           ],
         ),
@@ -337,209 +355,255 @@ class _LastDigitPageState extends State<LastDigitPage> {
           children: [
             // Input Field (Text)
             Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  _inputValue.isEmpty && !_showKeyboard
-                      ? 'Masukan 3 Digit Terakhir No Pelanggan'
-                      : _inputValue,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: _inputValue.isEmpty && !_showKeyboard
-                        ? text400
-                        : text500Base,
-                    fontWeight: _inputValue.isNotEmpty
-                        ? FontWeight.w600
-                        : FontWeight.normal,
-                  ),
+              child: Text(
+                _inputValue.isEmpty && !_showKeyboard
+                    ? 'Masukan 3 Digit Terakhir No Pelanggan'
+                    : _inputValue,
+                style: TextStyle(
+                  color: _inputValue.isEmpty && !_showKeyboard
+                      ? text300
+                      : text700,
+                  fontSize: 14.sp,
+                  fontFamily: 'Inter',
+                  fontWeight: medium,
                 ),
               ),
             ),
 
+            horizontalSpace(13.w),
+
             // Icon Search
-            Icon(Remix.search_line, size: 18, color: text400),
+            GestureDetector(
+              onTap: () {
+                _doneSearch();
+              },
+              child: Icon(Remix.search_line, size: 24, color: baseBlack),
+            ),
           ],
         ),
       ),
     );
   }
 
+  void _setValueKeyboard(String value) {
+    // logic tetap di page
+    if (_inputValue.length < 3) {
+      setState(() {
+        _inputValue += value;
+        // Reset hasil pencarian saat input berubah
+        if (_inputValue.length < 3) {
+          _searchResult = null;
+        }
+      });
+    }
+
+    // 🔥 Auto-search ketika sudah 3 digit
+    if (_inputValue.length == 3) {
+      final searchData = {
+        'nomor': '2039948885$_inputValue',
+        'nama': 'Rey Ronald',
+        'lokasi': 'BONTOMANAI',
+      };
+
+      setState(() {
+        _searchResult = searchData;
+      });
+
+      // Simpan ke riwayat pencarian
+      _addToSearchHistory(
+        _inputValue,
+        searchData['nama']!,
+        searchData['nomor']!,
+      );
+    }
+  }
+
   Widget _buildCustomKeyboard() {
-    return Container(
-      height: 230.h,
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12.h),
-      decoration: BoxDecoration(color: baseWhite),
-      child: Column(
-        children: [
-          // Baris 1
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildNumberButton('1'),
-              _buildNumberButton('2'),
-              _buildNumberButton('3'),
-            ],
-          ),
-          verticalSpace(10.h),
+    return Column(
+      children: [
+        // Baris 1
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            // Expanded(child: _buildNumberButton('1')),
+            Expanded(
+              child: CustomKeyboardButton(
+                label: '1',
+                borderColor: borderDark,
+                onTap: (value) {
+                  _setValueKeyboard(value);
+                },
+              ),
+            ),
 
-          // Baris 2
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildNumberButton('4'),
-              _buildNumberButton('5'),
-              _buildNumberButton('6'),
-            ],
-          ),
-          verticalSpace(10.h),
+            horizontalSpace(12.w),
+            Expanded(
+              child: CustomKeyboardButton(
+                label: '2',
+                borderColor: borderDark,
+                onTap: (value) {
+                  _setValueKeyboard(value);
+                },
+              ),
+            ),
+            horizontalSpace(12.w),
+            Expanded(
+              child: CustomKeyboardButton(
+                label: '3',
+                borderColor: borderDark,
+                onTap: (value) {
+                  _setValueKeyboard(value);
+                },
+              ),
+            ),
+          ],
+        ),
+        verticalSpace(12.h),
 
-          // Baris 3
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildNumberButton('7'),
-              _buildNumberButton('8'),
-              _buildNumberButton('9'),
-            ],
-          ),
-          verticalSpace(10.h),
+        // Baris 2
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Expanded(
+              child: CustomKeyboardButton(
+                label: '4',
+                borderColor: borderDark,
+                onTap: (value) {
+                  _setValueKeyboard(value);
+                },
+              ),
+            ),
+            horizontalSpace(12.w),
+            Expanded(
+              child: CustomKeyboardButton(
+                label: '5',
+                borderColor: borderDark,
+                onTap: (value) {
+                  _setValueKeyboard(value);
+                },
+              ),
+            ),
+            horizontalSpace(12.w),
+            Expanded(
+              child: CustomKeyboardButton(
+                label: '6',
+                borderColor: borderDark,
+                onTap: (value) {
+                  _setValueKeyboard(value);
+                },
+              ),
+            ),
+          ],
+        ),
+        verticalSpace(12.h),
 
-          // Baris 4 (Clear, 0, Submit)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              GestureDetector(
-                onTap: () {
+        // Baris 3
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Expanded(
+              child: CustomKeyboardButton(
+                label: '7',
+                borderColor: borderDark,
+                onTap: (value) {
+                  _setValueKeyboard(value);
+                },
+              ),
+            ),
+            horizontalSpace(12.w),
+            Expanded(
+              child: CustomKeyboardButton(
+                label: '8',
+                borderColor: borderDark,
+                onTap: (value) {
+                  _setValueKeyboard(value);
+                },
+              ),
+            ),
+            horizontalSpace(12.w),
+            Expanded(
+              child: CustomKeyboardButton(
+                label: '9',
+                borderColor: borderDark,
+                onTap: (value) {
+                  _setValueKeyboard(value);
+                },
+              ),
+            ),
+          ],
+        ),
+        verticalSpace(12.h),
+
+        // Baris 4 (Clear, 0, Submit)
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Expanded(
+              child: CustomKeyboardButton(
+                label: 'Clear',
+                backgroundColor: primary100,
+                textColor: primary500Base,
+                onTap: (value) {
                   setState(() {
                     _inputValue = '';
                     _searchResult = null;
                   });
                 },
-                child: Container(
-                  width: 80.w,
-                  height: 40.h,
-                  decoration: BoxDecoration(
-                    color: primary100,
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Clear',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.bold,
-                        color: primary500Base,
-                      ),
-                    ),
-                  ),
-                ),
               ),
-              _buildNumberButton('0'),
-              GestureDetector(
-                onTap: () {
-                  if (_inputValue.length == 3) {
-                    // Simulasi pencarian — ganti dengan API/Database nanti
-                    final searchData = {
-                      'nomor': '2039948885$_inputValue',
-                      'nama': 'Rey Ronald',
-                      'lokasi': 'BONTOMANAI',
-                    };
-
-                    setState(() {
-                      _searchResult = searchData;
-                    });
-
-                    // Simpan ke riwayat pencarian
-                    _addToSearchHistory(
-                      _inputValue,
-                      searchData['nama']!,
-                      searchData['nomor']!,
-                    );
-
-                    // Tutup keyboard setelah submit
-                    setState(() {
-                      _showKeyboard = false;
-                    });
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Masukkan 3 digit')),
-                    );
-                  }
+            ),
+            horizontalSpace(12.w),
+            Expanded(
+              child: CustomKeyboardButton(
+                label: '0',
+                borderColor: borderDark,
+                onTap: (value) {
+                  _setValueKeyboard(value);
                 },
-                child: Container(
-                  width: 80.w,
-                  height: 40.h,
-                  decoration: BoxDecoration(
-                    color: primary500Base,
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Remix.arrow_right_s_line,
-                      color: baseWhite,
-                      size: 18,
-                    ),
-                  ),
-                ),
               ),
-            ],
-          ),
-        ],
-      ),
+            ),
+            horizontalSpace(12.w),
+            Expanded(
+              child: CustomKeyboardButton(
+                iconParam: Remix.arrow_right_s_line,
+                backgroundColor: primary500Base,
+                warnaIcons: baseWhite,
+                onTap: (value) {
+                  _doneSearch();
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
-  Widget _buildNumberButton(String number) {
-    return GestureDetector(
-      onTap: () {
-        if (_inputValue.length < 3) {
-          setState(() {
-            _inputValue += number;
-            // Reset hasil pencarian saat input berubah
-            if (_inputValue.length < 3) {
-              _searchResult = null;
-            }
-          });
-        }
-
-        // 🔥 Auto-search ketika sudah 3 digit
-        if (_inputValue.length == 3) {
-          final searchData = {
-            'nomor': '2039948885$_inputValue',
-            'nama': 'Rey Ronald',
-            'lokasi': 'BONTOMANAI',
-          };
-
-          setState(() {
-            _searchResult = searchData;
-          });
-
-          // Simpan ke riwayat pencarian
-          _addToSearchHistory(
-            _inputValue,
-            searchData['nama']!,
-            searchData['nomor']!,
-          );
-        }
-      },
-      child: Container(
-        width: 80.w,
-        height: 40.h,
-        decoration: BoxDecoration(
-          color: baseSection,
-          borderRadius: BorderRadius.circular(8.r),
-          border: Border.all(color: borderDark),
-        ),
-        child: Center(
-          child: Text(
-            number,
-            style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
-          ),
-        ),
-      ),
-    );
+  void _doneSearch() {
+    if (_inputValue.length == 3) {
+      // Simulasi pencarian — ganti dengan API/Database nanti
+      final searchData = {
+        'nomor': '2039948885$_inputValue',
+        'nama': 'Rey Ronald',
+        'lokasi': 'BONTOMANAI',
+      };
+      setState(() {
+        _searchResult = searchData;
+      });
+      // Simpan ke riwayat pencarian
+      _addToSearchHistory(
+        _inputValue,
+        searchData['nama']!,
+        searchData['nomor']!,
+      );
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Masukkan 3 digit')));
+    }
+    // Tutup keyboard setelah submit
+    setState(() {
+      _showKeyboard = false;
+    });
   }
 
   Widget _buildEmpty() {

@@ -17,79 +17,77 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Background Biru
-            _buildBackground(context),
-
-            // content
-            Positioned(
-              top: context.height * 0.2 - 24, // 🔑 naik 24px
-              left: 0,
-              right: 0,
-              child: _buildContent(context),
-            ),
-
-            // 🔥 RR BOX
-            Positioned(
-              top:
-                  context.height * 0.2 - 24 - 35, // 🔑 naik setengah tinggi box
-              left: 16.w,
-              child: Container(
-                width: 80,
-                height: 80,
-                clipBehavior: Clip.antiAlias,
-                decoration: ShapeDecoration(
-                  color: primary100,
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(width: 4, color: Colors.white),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+      body: Stack(
+        children: [
+          // Background Biru
+          _buildBackground(context),
+      
+          // content
+          Positioned(
+            top: context.height * 0.2 - 24, // 🔑 naik 24px
+            left: 0,
+            right: 0,
+            child: _buildContent(context),
+          ),
+      
+          // 🔥 RR BOX
+          Positioned(
+            top:
+                context.height * 0.2 - 24 - 35, // 🔑 naik setengah tinggi box
+            left: 16.w,
+            child: Container(
+              width: 80,
+              height: 80,
+              clipBehavior: Clip.antiAlias,
+              decoration: ShapeDecoration(
+                color: primary100,
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(width: 4, color: Colors.white),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Center(
-                  child: Text(
-                    'RR',
-                    style: TextStyle(
-                      color: primary500Base,
-                      fontSize: 28.sp,
-                      fontFamily: 'Inter',
-                      fontWeight: bold,
-                    ),
+              ),
+              child: Center(
+                child: Text(
+                  'RR',
+                  style: TextStyle(
+                    color: primary500Base,
+                    fontSize: 28.sp,
+                    fontFamily: 'Inter',
+                    fontWeight: bold,
                   ),
                 ),
               ),
             ),
-
-            // Powered By MKP
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 16.h, 
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    Language.poweredBy,
-                    style: TextStyle(
-                      color: text700,
-                      fontSize: 10.sp,
-                      fontFamily: 'Inter',
-                      fontWeight: semiBold,
-                    ),
+          ),
+      
+          // Powered By MKP
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 16.h, 
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  Language.poweredBy,
+                  style: TextStyle(
+                    color: text700,
+                    fontSize: 10.sp,
+                    fontFamily: 'Inter',
+                    fontWeight: semiBold,
                   ),
-                  verticalSpace(8.h),
-                  Image.asset(
-                    'assets/icon/login/ic_logo_primary_mkp.png',
-                    width: 85.w,
-                    height: 24.h,
-                    fit: BoxFit.contain,
-                  ),
-                ],
-              ),
+                ),
+                verticalSpace(8.h),
+                Image.asset(
+                  'assets/icon/login/ic_logo_primary_mkp.png',
+                  width: 85.w,
+                  height: 24.h,
+                  fit: BoxFit.contain,
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
