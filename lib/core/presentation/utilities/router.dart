@@ -12,7 +12,6 @@ import '../page/auth/login/login_page.dart';
 import '../page/main_page/main_page.dart';
 import '../page/splash/splash_page.dart';
 
-
 class AppRouter {
   static final routes = GoRouter(
     navigatorKey: navigatorKey,

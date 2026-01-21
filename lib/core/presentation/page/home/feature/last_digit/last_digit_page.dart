@@ -51,6 +51,7 @@ class _LastDigitPageState extends State<LastDigitPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           _buildBackground(context),

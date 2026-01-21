@@ -7,7 +7,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:remixicon/remixicon.dart';
 
+import '../../../../commons/extensions/context_extension.dart';
+import '../../../../commons/language/language.dart';
 import '../../../../commons/routes/routes.dart';
+import '../../../../commons/themes/constants.dart';
+import '../../../../commons/themes/text_styel.dart';
 
 class DaftarRayonPage extends StatefulWidget {
   const DaftarRayonPage({super.key});
@@ -23,6 +27,9 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
   late RayonRepository _rayonRepository;
   List<RayonTableData> _rayonList = [];
   bool _isLoading = true;
+
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -73,6 +80,8 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
 
   @override
   void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
     _tabController.dispose();
     super.dispose();
   }
@@ -92,58 +101,147 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
           // Background utama
-          Column(
-            children: [
-              // Header dengan background biru
-              _buildHeader(context),
-              // Area putih di bawah header
-              Expanded(child: Container(color: baseWhite)),
-            ],
-          ),
+          _buildBackground(context),
 
-          // Konten utama yang menumpang di atas header
-          Positioned(
-            top: 180.h,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              alignment: Alignment.topCenter,
-              decoration: const BoxDecoration(
-                color: baseWhite,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
-              ),
-              child: Padding(
-                padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 16.h),
-                child: _buildRayonContent(),
-              ),
-            ),
-          ),
+          // Konten utama
+          _buildContent(context),
 
-          // Search Input Floating - di depan semua widget
-          Positioned(
-            bottom: 16.h,
-            left: 16.w,
-            right: 16.w,
-            child: _buildSearchInput(context),
-          ),
-
-          // SafeArea di atas stack untuk menghindari notch
-          const SafeArea(
-            top: true,
-            bottom: false,
-            left: false,
-            right: false,
-            child: SizedBox(),
-          ),
+          // Search Input dan Custom Keyboard Floating - dijadikan satu
+          _searchList(),
         ],
       ),
+    );
+  }
+
+  Widget _searchList() {
+    return Positioned(
+      bottom: 16.h,
+      left: 16.w,
+      right: 16.w,
+      child: Column(
+        children: [
+          // _buildSearchInput(context)
+          _buildBaccanSection(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    final bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        // 🔥 AREA BACKGROUND
+        Expanded(
+          flex: 3, // tinggi relatif (background)
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: defaultMargin.w,
+              top: 16.h,
+              right: defaultMargin.w,
+            ),
+            child: Column(
+              children: [
+                verticalSpace(24.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    GestureDetector(
+                      onTap: () => context.pop(),
+                      child: Icon(
+                        Remix.arrow_left_line,
+                        color: baseWhite,
+                        size: 20,
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        Language.daftarRayon,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20.sp,
+                          fontFamily: 'Inter',
+                          fontWeight: bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                /// ❌ HILANG SAAT KEYBOARD TERBUKA
+                if (!isKeyboardOpen) ...[
+                  const Spacer(),
+                  _buildBaccanSectionNew(),
+                  verticalSpace(16.h),
+                ],
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 7, // tinggi relatif (background)
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.only(
+              // top: 24.h,
+              left: 16.w,
+              right: 16.w,
+              bottom: 16.h,
+            ),
+            clipBehavior: Clip.antiAlias,
+            decoration: ShapeDecoration(
+              color: Colors.white /* Color-Base-color-Background-Bg-white */,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
+              ),
+            ),
+            child: _buildRayonContent(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBackground(BuildContext context) {
+    final width = context.width;
+    final height = context.height;
+    return Stack(
+      children: [
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            height: height * 0.3,
+            clipBehavior: Clip.hardEdge,
+            decoration: BoxDecoration(color: primary500Base),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Image.asset(
+                    'assets/icon/home/ic_appbar.png',
+                    width: width * 0.5,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -154,83 +252,199 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
     return _filteredRayonList.isEmpty ? _buildEmpty() : _buildRayonList();
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 180.h,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: primary500Base,
-        image: const DecorationImage(
-          image: AssetImage('assets/icon/home/ic_appbar.png'),
-          fit: BoxFit.contain,
-          alignment: Alignment.centerRight,
-        ),
-      ),
-      child: Column(
-        children: [
-          verticalSpace(40.h),
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Icon(Remix.arrow_left_line, color: baseWhite, size: 20),
-              ),
-              Expanded(
-                child: Center(
-                  child: Text(
-                    'Daftar Rayon',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                      color: baseWhite,
-                    ),
-                  ),
-                ),
+  Widget _buildBaccanSectionNew() {
+    return Column(
+      children: [
+        verticalSpace(16.h),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(8),
+          decoration: ShapeDecoration(
+            color: primary700,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30.r),
+            ),
+            shadows: [
+              BoxShadow(
+                color: Color(0x28000000),
+                blurRadius: 4,
+                offset: Offset(0, 1),
+                spreadRadius: 0,
               ),
             ],
-          ),
-          verticalSpace(20.h),
-          _buildBaccanSection(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBaccanSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: EdgeInsets.all(8),
-          height: 56.h,
-          decoration: BoxDecoration(
-            color: primary700,
-            borderRadius: BorderRadius.circular(28.r),
           ),
           child: TabBar(
             controller: _tabController,
-            dividerColor: Colors.transparent,
-            indicator: BoxDecoration(
-              color: baseWhite,
-              borderRadius: BorderRadius.circular(28.r),
-            ),
             indicatorSize: TabBarIndicatorSize.tab,
-            labelColor: primary500Base,
-            unselectedLabelColor: baseWhite,
-            labelStyle: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600),
-            unselectedLabelStyle: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.normal,
-            ),
+            indicatorColor: primary500Base,
+            dividerColor: Colors.transparent,
+            splashFactory: NoSplash.splashFactory,
+            // padding: EdgeInsets.symmetric(horizontal: defaultMargin),
+            splashBorderRadius: BorderRadius.circular(24.r),
             tabs: [
-              Tab(text: 'Bacaan'),
-              Tab(text: 'Bacaan Ulang'),
+              Tab(text: Language.bacaan),
+              Tab(text: Language.bacaanUlang),
             ],
+            indicator: BoxDecoration(
+              // color: primary500Base,
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24.r),
+            ),
+            labelColor: primary500Base,
+            // labelColor: neutralColor1,
+            unselectedLabelStyle: TextStyle(
+              color: const Color(0xFFD5DAF9),
+              fontSize: 14.sp,
+              fontFamily: 'Inter',
+              fontWeight: semiBold,
+            ),
+
+            unselectedLabelColor: baseWhite,
+            labelStyle: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: semiBold,
+              fontFamily: 'Inter',
+              color: const Color(0xFF2B3499),
+            ),
           ),
         ),
       ],
     );
+  }
+
+  Widget _buildBaccanSection() {
+    return Material(
+      color: Colors.transparent,
+      elevation: 6, // setara blurRadius 4
+      shadowColor: const Color(0x1E636363),
+      borderRadius: BorderRadius.circular(12),
+      child: TextFormField(
+        keyboardType: TextInputType.text,
+        controller: _searchController,
+        focusNode: _searchFocusNode,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+
+        onChanged: (value) async {
+          setState(() {
+            _searchQuery = value;
+          });
+          await _searchRayons(value);
+        },
+
+        onTapOutside: (_) => _searchFocusNode.unfocus(),
+
+        style: TextStyle(
+          color: text700,
+          fontSize: 14.sp,
+          fontFamily: 'Inter',
+          fontWeight: medium,
+        ),
+
+        decoration: InputDecoration(
+          isDense: true,
+          hintText: Language.cariRayon,
+          hintStyle: TextStyle(
+            color: text300,
+            fontSize: 14.sp,
+            fontFamily: 'Inter',
+            fontWeight: medium,
+          ),
+
+          // 🔥 Padding internal TextField
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: 16.w,
+            vertical: 12.h,
+          ),
+
+          // 🔍 Icon kiri
+          prefixIcon: Icon(Remix.search_line, size: 24, color: baseBlack),
+
+          // ❌ Icon clear kanan
+          suffixIcon: _searchQuery.isNotEmpty
+              ? GestureDetector(
+                  onTap: () async {
+                    setState(() {
+                      _searchQuery = '';
+                    });
+                    _searchController.clear();
+                    await _loadRayons();
+                  },
+                  child: Icon(Remix.close_line, size: 24, color: baseBlack),
+                )
+              : null,
+
+          // 🟦 Border normal
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: borderDefault),
+          ),
+
+          // 🟦 Border fokus
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: borderDefault),
+          ),
+
+          // 🚫 Hilangkan error height tambahan
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: borderDefault),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: borderDefault),
+          ),
+
+          filled: true,
+          fillColor: Colors.white,
+        ),
+      ),
+    );
+
+    // Column(
+    //   crossAxisAlignment: CrossAxisAlignment.start,
+    //   children: [
+    //     Container(
+    //       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+    //       // height: 56.h,
+    //       decoration: ShapeDecoration(
+    //         color: primary700,
+    //         // borderRadius: BorderRadius.circular(28.r),
+    //         shape: RoundedRectangleBorder(
+    //           borderRadius: BorderRadius.circular(40),
+    //         ),
+    //         shadows: [
+    //           BoxShadow(
+    //             color: Color(0x28000000),
+    //             blurRadius: 4,
+    //             offset: Offset(0, 1),
+    //             spreadRadius: 0,
+    //           ),
+    //         ],
+    //       ),
+    //       child: TabBar(
+    //         controller: _tabController,
+    //         dividerColor: Colors.transparent,
+    //         indicator: BoxDecoration(
+    //           color: baseWhite,
+    //           borderRadius: BorderRadius.circular(28.r),
+    //         ),
+    //         indicatorSize: TabBarIndicatorSize.tab,
+    //         labelColor: primary500Base,
+    //         unselectedLabelColor: baseWhite,
+    //         labelStyle: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600),
+    //         unselectedLabelStyle: TextStyle(
+    //           fontSize: 12.sp,
+    //           fontWeight: FontWeight.normal,
+    //         ),
+    //         tabs: [
+    //           Tab(text: 'Bacaan'),
+    //           Tab(text: 'Bacaan Ulang'),
+    //         ],
+    //       ),
+    //     ),
+    //   ],
+    // );
   }
 
   Widget _buildRayonList() {
@@ -238,13 +452,18 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
 
     return ListView.separated(
       shrinkWrap: true,
-      physics: const ClampingScrollPhysics(),
-      padding: EdgeInsets.only(bottom: 80.h),
+      physics: const AlwaysScrollableScrollPhysics(),
+      // padding: EdgeInsets.only(bottom: 80.h),
       itemCount: rayons.length,
-      separatorBuilder: (_, __) =>
-          Padding(padding: EdgeInsets.symmetric(vertical: 12.h)),
+      separatorBuilder: (_, __) => verticalSpace(12.h),
       itemBuilder: (context, index) {
-        return _buildRayonItem(rayons[index]);
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: index == rayons.length - 1 ? 300.h : 0.h,
+            top: index == 0 ? 12.h : 0.h,
+          ),
+          child: _buildRayonItem(rayons[index]),
+        );
       },
     );
   }
@@ -261,31 +480,37 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
         // );
         context.pushNamed(
           Routes.listPelangganPage,
-          pathParameters: {'rayonId': rayon.id, 'rayonName': rayon.nama},
+          queryParameters: {'rayonId': rayon.id, 'rayonName': rayon.nama},
         );
       },
       child: Container(
-        padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          color: baseWhite,
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: borderDark),
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+        decoration: ShapeDecoration(
+          color: Colors.white /* Color-Base-color-Background-Bg-white */,
+          shape: RoundedRectangleBorder(
+            side: BorderSide(
+              width: 1,
+              color: const Color(
+                0xFFDBDBDB,
+              ) /* Color-Base-color-Border-border-dark */,
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: baseSection,
                 borderRadius: BorderRadius.circular(30),
                 border: Border.all(color: baseSection),
               ),
-              child: Icon(Remix.folders_fill, color: primary500Base, size: 32),
+              child: Icon(Remix.folders_fill, color: primary500Base, size: 24),
             ),
-
             horizontalSpace(12.w),
-
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -296,17 +521,19 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
                       Text(
                         'Rayon',
                         style: TextStyle(
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w400,
                           color: text400,
+                          fontSize: 12.sp,
+                          fontFamily: 'Inter',
+                          fontWeight: regular,
                         ),
                       ),
                       Text(
                         'Pelanggan',
                         style: TextStyle(
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w400,
                           color: text400,
+                          fontSize: 12.sp,
+                          fontFamily: 'Inter',
+                          fontWeight: regular,
                         ),
                       ),
                     ],
@@ -320,23 +547,25 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
                       Text(
                         '${rayon.id} - ${rayon.nama}',
                         style: TextStyle(
+                          color: text700,
                           fontSize: 16.sp,
-                          fontWeight: FontWeight.w600,
-                          color: text600,
+                          fontFamily: 'Inter',
+                          fontWeight: bold,
                         ),
                       ),
                       Text(
                         rayon.total.toString(),
                         style: TextStyle(
+                          color: text700,
                           fontSize: 16.sp,
-                          fontWeight: FontWeight.bold,
-                          color: text600,
+                          fontFamily: 'Inter',
+                          fontWeight: bold,
                         ),
                       ),
                     ],
                   ),
 
-                  verticalSpace(8.h),
+                  verticalSpace(16.h),
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -344,17 +573,19 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
                       Text(
                         'Sudah Terbaca: ${rayon.sudahTerbaca}',
                         style: TextStyle(
+                          color: text700,
                           fontSize: 14.sp,
-                          fontWeight: FontWeight.w500,
-                          color: text600,
+                          fontFamily: 'Inter',
+                          fontWeight: medium,
                         ),
                       ),
                       Text(
                         'Belum Terbaca: ${rayon.belumTerbaca}',
                         style: TextStyle(
+                          color: text700,
                           fontSize: 14.sp,
-                          fontWeight: FontWeight.w500,
-                          color: text600,
+                          fontFamily: 'Inter',
+                          fontWeight: medium,
                         ),
                       ),
                     ],
@@ -364,61 +595,6 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildSearchInput(BuildContext context) {
-    return Container(
-      height: 48.h,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: baseWhite,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: borderDark),
-        boxShadow: [
-          BoxShadow(
-            color: baseBlack.withValues(alpha: 0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(Remix.search_line, size: 18, color: text400),
-          horizontalSpace(8.w),
-          Expanded(
-            child: TextField(
-              onChanged: (value) async {
-                setState(() {
-                  _searchQuery = value;
-                });
-                await _searchRayons(value);
-              },
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                hintText: 'Cari Rayon',
-                hintStyle: TextStyle(fontSize: 12.sp, color: text400),
-              ),
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: text500Base,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          if (_searchQuery.isNotEmpty)
-            GestureDetector(
-              onTap: () async {
-                setState(() {
-                  _searchQuery = '';
-                });
-                await _loadRayons();
-              },
-              child: Icon(Remix.close_line, size: 18, color: text400),
-            ),
-        ],
       ),
     );
   }
@@ -440,56 +616,62 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
   }
 
   Widget _buildEmpty() {
-    return SingleChildScrollView(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            verticalSpace(40.h),
-            Image.asset(
-              'assets/images/img_empty_fix.png',
-              width: 240.w,
-              height: 240.h,
-              fit: BoxFit.contain,
+    return Center(
+      child: ListView(
+        children: [
+          verticalSpace(16.h),
+          Image.asset(
+            'assets/images/img_empty_fix.png',
+            width: 200.w,
+            height: 200.h,
+            fit: BoxFit.contain,
+          ),
+          verticalSpace(16.h),
+          Text(
+            'Data Belum Tersedia',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.bold,
+              color: text600,
+              fontFamily: 'Inter',
             ),
-            verticalSpace(16.h),
-            Text(
-              'Data Belum Tersedia',
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.bold,
-                color: text600,
+
+            textAlign: TextAlign.center,
+          ),
+          verticalSpace(8.h),
+          Text(
+            'Silahkan lakukan download master terlebih dahulu',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: text400,
+              fontFamily: 'Inter',
+            ),
+          ),
+          verticalSpace(16.h),
+          GestureDetector(
+            onTap: _loadRayons,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+              decoration: BoxDecoration(
+                color: primary500Base.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20.r),
+                border: Border.all(color: primary500Base),
+              ),
+              child: Text(
+                'Download Master Sekarang',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: primary500Base,
+                  fontFamily: 'Inter',
+                ),
+                textAlign: TextAlign.center,
               ),
             ),
-            verticalSpace(8.h),
-            Text(
-              'Silahkan lakukan download master terlebih dahulu',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14.sp, color: text400),
-            ),
-            verticalSpace(24.h),
-            GestureDetector(
-              onTap: _loadRayons,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-                decoration: BoxDecoration(
-                  color: primary500Base.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20.r),
-                  border: Border.all(color: primary500Base),
-                ),
-                child: Text(
-                  'Download Master Sekarang',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                    color: primary500Base,
-                  ),
-                ),
-              ),
-            ),
-            verticalSpace(80.h),
-          ],
-        ),
+          ),
+          verticalSpace(300.h),
+        ],
       ),
     );
   }

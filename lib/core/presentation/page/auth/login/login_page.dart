@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:remixicon/remixicon.dart';
 
 import '../../../commons/routes/routes.dart';
+import '../../../widget/bottom_sheet_pilih_data/bottom_sheet_pilih_data.dart';
 import '../../../widget/dropdown/form_dropdown.dart';
 
 class LoginPage extends StatefulWidget {
@@ -316,271 +317,311 @@ class _LoginPageState extends State<LoginPage> {
 
     showModalBottomSheet(
       context: context,
+      enableDrag: true,
+      isDismissible: false,
       isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
+      // builder: (context) => StatefulBuilder(
+      //   builder: (BuildContext context, StateSetter setModalState) {
+      //     return
+      //     // penambahan SafeArea dan SizedBox
+      //     SafeArea(
+      //       top: false,
+      //       child: SizedBox(
+      //         height:
+      //             MediaQuery.of(context).size.height * 0.75, // ✅ FIXED HEIGHT
+      //         child: Container(
+      //           width: double.infinity,
+      //           decoration: BoxDecoration(
+      //             color: neutralColor1,
+      //             shape: BoxShape.rectangle,
+      //             borderRadius: BorderRadius.only(
+      //               topLeft: Radius.circular(20.r),
+      //               topRight: Radius.circular(20.r),
+      //             ),
+      //           ),
+      //           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+      //           child:
+      //               // SingleChildScrollView(
+      //               //   child:
+      //               Column(
+      //                 crossAxisAlignment: CrossAxisAlignment.start,
+      //                 children: [
+      //                   // Header
+      //                   Row(
+      //                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      //                     children: [
+      //                       Text(
+      //                         Language.pilihPDAM,
+      //                         style: TextStyle(
+      //                           fontFamily: 'Inter',
+      //                           fontSize: 16.sp,
+      //                           fontWeight: bold,
+      //                           color: text700,
+      //                         ),
+      //                       ),
+      //                       GestureDetector(
+      //                         onTap: () => context.pop(),
+      //                         child: Icon(Remix.close_line, size: 24),
+      //                       ),
+      //                     ],
+      //                   ),
+      //                   verticalSpace(16.h),
+
+      //                   // Search Field
+      //                   Container(
+      //                     padding: const EdgeInsets.symmetric(
+      //                       horizontal: 16,
+      //                       vertical: 12,
+      //                     ),
+      //                     clipBehavior: Clip.antiAlias,
+      //                     decoration: ShapeDecoration(
+      //                       color: Colors
+      //                           .white /* Color-Base-color-Background-Bg-white */,
+      //                       shape: RoundedRectangleBorder(
+      //                         side: BorderSide(width: 1, color: borderDefault),
+      //                         borderRadius: BorderRadius.circular(8),
+      //                       ),
+      //                     ),
+      //                     child: TextFormField(
+      //                       controller: onSearchPDAMController,
+      //                       focusNode: searchPDAMFocusNode,
+      //                       onTapOutside: (_) => searchPDAMFocusNode.unfocus(),
+      //                       onFieldSubmitted: (value) {},
+      //                       onChanged: (value) {
+      //                         setModalState(() {
+      //                           // _filteredPdamData = _pdamData.where((item) {
+      //                           //   final name = (item['isiList'] ?? '')
+      //                           //       .toString()
+      //                           //       .toLowerCase();
+      //                           //   return name.contains(value.toLowerCase());
+      //                           // }).toList();
+      //                         });
+      //                       },
+      //                       decoration: InputDecoration(
+      //                         isDense: true, // 🔹 penting
+      //                         contentPadding:
+      //                             EdgeInsets.zero, // 🔹 hapus padding bawaan
+      //                         border: InputBorder.none,
+
+      //                         // 🔍 Icon di dalam TextFormField
+      //                         prefixIcon: Icon(
+      //                           Remix.search_2_line,
+      //                           color: text500Base,
+      //                           size: 24,
+      //                         ),
+
+      //                         // // 🔹 hilangkan padding bawaan prefixIcon
+      //                         prefixIconConstraints: const BoxConstraints(
+      //                           minWidth: 20,
+      //                           minHeight: 20,
+      //                         ),
+      //                         hintText: Language.cari,
+      //                         hintStyle: TextStyle(
+      //                           color: text300,
+      //                           fontSize: 14.sp,
+      //                           fontFamily: 'Inter',
+      //                           fontWeight: medium,
+      //                         ),
+      //                       ),
+      //                     ),
+      //                   ),
+      //                   verticalSpace(16.h),
+
+      //                   // List PDAM
+      //                   Expanded(
+      //                     child: _pdamData.isEmpty
+      //                         ? Center(
+      //                             child: Text(
+      //                               'Tidak ada data PDAM',
+      //                               style: TextStyle(
+      //                                 fontSize: 14.sp,
+      //                                 color: text400,
+      //                                 fontFamily: 'Inter',
+      //                               ),
+      //                             ),
+      //                           )
+      //                         : ListView.builder(
+      //                             shrinkWrap: true,
+      //                             physics: const BouncingScrollPhysics(),
+      //                             itemCount: _pdamData.length,
+      //                             itemBuilder: (context, index) {
+      //                               final item = _pdamData[index];
+      //                               final value = item['isiList'] ?? '';
+      //                               final isSelected =
+      //                                   _tempSelectedValue == value;
+
+      //                               return GestureDetector(
+      //                                 onTap: () {
+      //                                   setModalState(() {
+      //                                     _tempSelectedValue = value;
+      //                                   });
+      //                                 },
+      //                                 child: Container(
+      //                                   width: double.infinity,
+      //                                   padding: EdgeInsets.symmetric(
+      //                                     vertical: 12.h,
+      //                                   ),
+      //                                   decoration: ShapeDecoration(
+      //                                     color: Colors
+      //                                         .white /* Color-Base-color-Background-Bg-white */,
+      //                                     shape: RoundedRectangleBorder(
+      //                                       borderRadius: BorderRadius.circular(
+      //                                         8,
+      //                                       ),
+      //                                     ),
+      //                                   ),
+      //                                   child: Row(
+      //                                     mainAxisSize: MainAxisSize.min,
+      //                                     mainAxisAlignment:
+      //                                         MainAxisAlignment.center,
+      //                                     crossAxisAlignment:
+      //                                         CrossAxisAlignment.center,
+      //                                     spacing: 16,
+      //                                     children: [
+      //                                       if (isSelected) ...[
+      //                                         Container(
+      //                                           width: 24,
+      //                                           height: 24,
+      //                                           decoration: ShapeDecoration(
+      //                                             color: Colors.white,
+      //                                             shape: RoundedRectangleBorder(
+      //                                               side: BorderSide(
+      //                                                 width: 1,
+      //                                                 color: primary500Base,
+      //                                               ),
+      //                                               borderRadius:
+      //                                                   BorderRadius.circular(
+      //                                                     68,
+      //                                                   ),
+      //                                             ),
+      //                                           ),
+      //                                           child: Center(
+      //                                             child: Container(
+      //                                               width: 12,
+      //                                               height: 12,
+      //                                               decoration: ShapeDecoration(
+      //                                                 color: primary500Base,
+      //                                                 shape: const OvalBorder(),
+      //                                               ),
+      //                                             ),
+      //                                           ),
+      //                                         ),
+      //                                       ] else ...[
+      //                                         Container(
+      //                                           width: 24,
+      //                                           height: 24,
+      //                                           clipBehavior: Clip.antiAlias,
+      //                                           decoration: ShapeDecoration(
+      //                                             color: Colors
+      //                                                 .white /* Color-Base-color-Background-Bg-white */,
+      //                                             shape: RoundedRectangleBorder(
+      //                                               side: BorderSide(
+      //                                                 width: 1,
+      //                                                 color: const Color(
+      //                                                   0xFFE6E6E6,
+      //                                                 ),
+      //                                               ),
+      //                                               borderRadius:
+      //                                                   BorderRadius.circular(
+      //                                                     68,
+      //                                                   ),
+      //                                             ),
+      //                                           ),
+      //                                         ),
+      //                                       ],
+
+      //                                       Expanded(
+      //                                         child: Text(
+      //                                           value,
+      //                                           style: TextStyle(
+      //                                             color: text700,
+      //                                             fontSize: 14.sp,
+      //                                             fontFamily: 'Inter',
+      //                                             fontWeight: semiBold,
+      //                                           ),
+      //                                         ),
+      //                                       ),
+      //                                     ],
+      //                                   ),
+      //                                 ),
+      //                               );
+      //                             },
+      //                           ),
+      //                   ),
+
+      //                   verticalSpace(16.h),
+
+      //                   // Tombol Pilih
+      //                   GestureDetector(
+      //                     onTap: () {
+      //                       if (_tempSelectedValue != null) {
+      //                         setState(() {
+      //                           _selectedPdam = _tempSelectedValue;
+      //                         });
+      //                         if (redirectFrom == 'setting') {
+      //                           _passwordPDAMController.clear();
+      //                         }
+      //                         context.pop();
+      //                       }
+      //                     },
+      //                     child: Container(
+      //                       width: double.infinity,
+      //                       padding: EdgeInsets.symmetric(
+      //                         horizontal: 16.w,
+      //                         vertical: 12.h,
+      //                       ),
+      //                       clipBehavior: Clip.antiAlias,
+      //                       decoration: ShapeDecoration(
+      //                         color: _tempSelectedValue != null
+      //                             ? primary500Base
+      //                             : primary500Base.withValues(alpha: 0.5),
+      //                         shape: RoundedRectangleBorder(
+      //                           borderRadius: BorderRadius.circular(8),
+      //                         ),
+      //                       ),
+      //                       child: Text(
+      //                         Language.pilih,
+      //                         textAlign: TextAlign.center,
+      //                         style: TextStyle(
+      //                           color: Colors
+      //                               .white /* Color-Base-color-Text-Text-1 */,
+      //                           fontSize: 14.sp,
+      //                           fontFamily: 'Inter',
+      //                           fontWeight: medium,
+      //                         ),
+      //                       ),
+      //                     ),
+      //                   ),
+      //                 ],
+      //               ),
+      //         ),
+      //       ),
+      //     );
+      //   },
+      // ),
+
+      // New
       builder: (context) => StatefulBuilder(
-        builder: (BuildContext context, StateSetter setModalState) {
-          return SafeArea(
-            child: Container(
-              decoration: BoxDecoration(
-                color: baseWhite,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(16.r),
-                  topRight: Radius.circular(16.r),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 10,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.7,
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Header
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        Language.pilihPDAM,
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 16.sp,
-                          fontWeight: bold,
-                          color: text700,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () => context.pop(),
-                        child: Icon(Remix.close_line, size: 24),
-                      ),
-                    ],
-                  ),
-                  verticalSpace(16.h),
-
-                  // Search Field
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    decoration: ShapeDecoration(
-                      color: Colors
-                          .white /* Color-Base-color-Background-Bg-white */,
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(width: 1, color: borderDefault),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: TextFormField(
-                      controller: onSearchPDAMController,
-                      focusNode: searchPDAMFocusNode,
-                      onTapOutside: (_) => searchPDAMFocusNode.unfocus(),
-                      onFieldSubmitted: (value) {},
-                      onChanged: (value) {
-                        setModalState(() {
-                          // _filteredPdamData = _pdamData.where((item) {
-                          //   final name = (item['isiList'] ?? '')
-                          //       .toString()
-                          //       .toLowerCase();
-                          //   return name.contains(value.toLowerCase());
-                          // }).toList();
-                        });
-                      },
-                      decoration: InputDecoration(
-                        isDense: true, // 🔹 penting
-                        contentPadding:
-                            EdgeInsets.zero, // 🔹 hapus padding bawaan
-                        border: InputBorder.none,
-
-                        // 🔍 Icon di dalam TextFormField
-                        prefixIcon: Icon(
-                          Remix.search_2_line,
-                          color: text500Base,
-                          size: 24,
-                        ),
-
-                        // // 🔹 hilangkan padding bawaan prefixIcon
-                        prefixIconConstraints: const BoxConstraints(
-                          minWidth: 20,
-                          minHeight: 20,
-                        ),
-                        hintText: Language.cari,
-                        hintStyle: TextStyle(
-                          color: text300,
-                          fontSize: 14.sp,
-                          fontFamily: 'Inter',
-                          fontWeight: medium,
-                        ),
-                      ),
-                    ),
-                  ),
-                  verticalSpace(16.h),
-
-                  // List PDAM
-                  Expanded(
-                    child: _pdamData.isEmpty
-                        ? Center(
-                            child: Text(
-                              'Tidak ada data PDAM',
-                              style: TextStyle(
-                                fontSize: 14.sp,
-                                color: text400,
-                                fontFamily: 'Inter',
-                              ),
-                            ),
-                          )
-                        : ListView.builder(
-                            shrinkWrap: true,
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            itemCount: _pdamData.length,
-                            itemBuilder: (context, index) {
-                              final item = _pdamData[index];
-                              final value = item['isiList'] ?? '';
-                              final isSelected = _tempSelectedValue == value;
-
-                              return GestureDetector(
-                                onTap: () {
-                                  setModalState(() {
-                                    _tempSelectedValue = value;
-                                  });
-                                },
-                                child: Container(
-                                  width: double.infinity,
-                                  padding: EdgeInsets.symmetric(vertical: 12.h),
-                                  decoration: ShapeDecoration(
-                                    color: Colors
-                                        .white /* Color-Base-color-Background-Bg-white */,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    spacing: 16,
-                                    children: [
-                                      if (isSelected) ...[
-                                        Container(
-                                          width: 24,
-                                          height: 24,
-                                          decoration: ShapeDecoration(
-                                            color: Colors.white,
-                                            shape: RoundedRectangleBorder(
-                                              side: BorderSide(
-                                                width: 1,
-                                                color: primary500Base,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(68),
-                                            ),
-                                          ),
-                                          child: Center(
-                                            child: Container(
-                                              width: 12,
-                                              height: 12,
-                                              decoration: ShapeDecoration(
-                                                color: primary500Base,
-                                                shape: const OvalBorder(),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ] else ...[
-                                        Container(
-                                          width: 24,
-                                          height: 24,
-                                          clipBehavior: Clip.antiAlias,
-                                          decoration: ShapeDecoration(
-                                            color: Colors
-                                                .white /* Color-Base-color-Background-Bg-white */,
-                                            shape: RoundedRectangleBorder(
-                                              side: BorderSide(
-                                                width: 1,
-                                                color: const Color(0xFFE6E6E6),
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(68),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-
-                                      Expanded(
-                                        child: Text(
-                                          value,
-                                          style: TextStyle(
-                                            color: text700,
-                                            fontSize: 14.sp,
-                                            fontFamily: 'Inter',
-                                            fontWeight: semiBold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                  ),
-                  verticalSpace(16.h),
-
-                  // Tombol Pilih
-                  GestureDetector(
-                    onTap: () {
-                      if (_tempSelectedValue != null) {
-                        setState(() {
-                          _selectedPdam = _tempSelectedValue;
-                        });
-                        if (redirectFrom == 'setting') {
-                          _passwordPDAMController.clear();
-                        }
-                        context.pop();
-                      }
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16.w,
-                        vertical: 12.h,
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      decoration: ShapeDecoration(
-                        color: _tempSelectedValue != null
-                            ? primary500Base
-                            : primary500Base.withValues(alpha: 0.5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        Language.pilih,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color:
-                              Colors.white /* Color-Base-color-Text-Text-1 */,
-                          fontSize: 14.sp,
-                          fontFamily: 'Inter',
-                          fontWeight: medium,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+        builder: (context, setModalState) {
+          return PdamBottomSheetContent(
+            judul: Language.pilihPDAM,
+            textTombol: Language.pilih,
+            setModalState: setModalState,
+            pdamData: _pdamData,
+            tempSelectedValue: _tempSelectedValue,
+            searchController: onSearchPDAMController,
+            searchFocusNode: searchPDAMFocusNode,
+            onSelect: (value) {
+              setModalState(() => _tempSelectedValue = value);
+            },
+            onClose: () => context.pop(),
+            onSubmit: () {
+              setState(() => _selectedPdam = _tempSelectedValue);
+              if (redirectFrom == 'setting') {
+                _passwordPDAMController.clear();
+              }
+              context.pop();
+            },
           );
         },
       ),

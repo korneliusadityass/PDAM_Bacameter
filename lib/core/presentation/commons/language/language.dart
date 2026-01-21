@@ -39,13 +39,17 @@ class Language {
   static String konfirmasi = 'Konfirmasi';
   static String simpanHasilBaca = 'Simpan Hasil Baca';
   static String angkaStan = 'Angka Stan';
-  static String masukkanAngkaStan =  'Masukkan Angka Stan';
-  static String kelainan =  'Kelainan';
-  static String masukkanKelainan =  'Masukkan Kelainan';
-  static String perubahanAtribut =  'Perubahan Atribut';
-  static String memo =  'Memo';
-  static String edit =  'Edit';
-
-
-  
+  static String masukkanAngkaStan = 'Masukkan Angka Stan';
+  static String kelainan = 'Kelainan';
+  static String masukkanKelainan = 'Masukkan Kelainan';
+  static String perubahanAtribut = 'Perubahan Atribut';
+  static String memo = 'Memo';
+  static String edit = 'Edit';
+  static String scanQr = 'Scan QR';
+  static String arahkanKameraKeKodeQr = 'Arahkan kamera ke Kode QR';
+  static String golongan = 'Golongan';
+  static String mrkMeter = 'MRK.Meter';
+  static String bacaan = 'Bacaan';
+  static String bacaanUlang = 'Bacaan Ulang';
+  static String cariRayon = 'Cari Rayon';
 }

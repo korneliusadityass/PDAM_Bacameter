@@ -3,8 +3,6 @@ import 'dart:io';
 import 'package:baca_meter/core/presentation/commons/methods/methods.dart';
 import 'package:baca_meter/core/presentation/commons/themes/color.dart';
 import 'package:baca_meter/core/presentation/page/home/feature/detail_pelanggan/widget/dialog_option.dart';
-import 'package:baca_meter/core/presentation/page/home/feature/detail_pelanggan/widget/golongan_bottom.dart';
-import 'package:baca_meter/core/presentation/page/home/feature/detail_pelanggan/widget/mark_meter_bottom.dart';
 import 'package:baca_meter/core/presentation/page/home/feature/detail_pelanggan/widget/memo_bottom.dart';
 import 'package:baca_meter/core/presentation/widget/dashed/dased.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +15,7 @@ import '../../../../commons/extensions/context_extension.dart';
 import '../../../../commons/language/language.dart';
 import '../../../../commons/themes/constants.dart';
 import '../../../../commons/themes/text_styel.dart';
+import '../../../../widget/bottom_sheet_pilih_data/bottom_sheet_pilih_data.dart';
 
 class DetailPelangganPage extends StatefulWidget {
   const DetailPelangganPage({super.key});
@@ -36,49 +35,55 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
   File? _selectedMeteranImage;
   File? _selectedRumahImage;
 
+  String? _selectedGolongan;
+  String? _tempSelectedValueGolongan; // ✅ pindahkan ke page
+  String? _selectedMarkMeter;
+  String? _tempSelectedValueMarkMeter; // ✅ pindahkan ke page
+
+  final TextEditingController _searchControllerGolongan = TextEditingController();
+  final FocusNode _focusNodeGolongan = FocusNode();
+  final TextEditingController _searchControllerMarkMeter = TextEditingController();
+  final FocusNode _focusNodeMarkMeter = FocusNode();
+
+  final List<Map<String, String>> _golongan = [
+    {'isiList': 'Gol A'},
+    {'isiList': 'Gol B'},
+    {'isiList': 'Gol C'},
+    {'isiList': 'Gol D'},
+    {'isiList': 'Gol E'},
+    {'isiList': 'Gol F'},
+    {'isiList': 'Gol G'},
+  ];
+
+  final List<Map<String, String>> _mrkMeter = [
+    {'isiList': 'MRK A'},
+    {'isiList': 'MRK B'},
+    {'isiList': 'MRK C'},
+    {'isiList': 'MRK D'},
+    {'isiList': 'MRK E'},
+    {'isiList': 'MRK F'},
+    {'isiList': 'MRK G'},
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _focusNodeGolongan.dispose();
+    _searchControllerGolongan.dispose();
+    _focusNodeMarkMeter.dispose();
+    _searchControllerMarkMeter.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          // // Konten utama yang menumpang di atas header — dibungkus GestureDetector
-          // Positioned(
-          //   top: 140,
-          //   left: 0,
-          //   right: 0,
-          //   bottom: 80.h,
-          //   child: Container(
-          //     alignment: Alignment.topCenter,
-          //     decoration: const BoxDecoration(
-          //       color: baseWhite,
-          //       borderRadius: BorderRadius.only(
-          //         topLeft: Radius.circular(20),
-          //         topRight: Radius.circular(20),
-          //       ),
-          //     ),
-          //     child: Padding(
-          //       padding: const EdgeInsets.all(16.0),
-          //       child: SingleChildScrollView(
-          //         child: Column(
-          //           crossAxisAlignment: CrossAxisAlignment.start,
-          //           children: [
-          //             _buildDetailPelanggan(),
-          //             verticalSpace(14.h),
-          //             _buildPemakaianSection(),
-          //             verticalSpace(14.h),
-          //             _buildKelainanSection(),
-          //             verticalSpace(14.h),
-          //             _buildPerubahanAtributSection(),
-          //             verticalSpace(14.h),
-          //             _buildRincianRekeningSection(),
-          //             verticalSpace(14.h),
-          //           ],
-          //         ),
-          //       ),
-          //     ),
-          //   ),
-          // ),
-
           // Background utama
           _buildBackground(context),
 
@@ -258,48 +263,6 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
             fontWeight: medium,
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 200.h,
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: primary500Base,
-        image: const DecorationImage(
-          image: AssetImage('assets/icon/home/ic_appbar.png'),
-          fit: BoxFit.contain,
-          alignment: Alignment.centerRight,
-        ),
-      ),
-      child: Column(
-        children: [
-          verticalSpace(60.h),
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Icon(Remix.arrow_left_line, color: baseWhite, size: 20),
-              ),
-              Expanded(
-                child: Center(
-                  child: Text(
-                    'Konfirmasi',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 20),
-            ],
-          ),
-        ],
       ),
     );
   }
@@ -867,15 +830,6 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
     );
   }
 
-  // Widget untuk garis pemisah (reuse dari sebelumnya)
-  Widget _buildDivider() {
-    return Divider(
-      height: 1,
-      thickness: 1,
-      color: borderDark.withValues(alpha: 0.5),
-    );
-  }
-
   Widget _buildKelainanSection() {
     return Container(
       width: double.infinity,
@@ -1360,20 +1314,66 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
   }
 
   void showPilihGolonganBottomSheet(BuildContext context) {
+    _tempSelectedValueGolongan = _selectedGolongan; // ✅ sync awal
     showModalBottomSheet(
       context: context,
+      enableDrag: true,
+      isDismissible: false,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const PilihGolonganBottomSheet(),
+      // builder: (context) => const PilihGolonganBottomSheet(),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          return PdamBottomSheetContent(
+            judul: Language.golongan,
+            textTombol: Language.simpan,
+            setModalState: setModalState,
+            pdamData: _golongan,
+            tempSelectedValue: _tempSelectedValueGolongan,
+            searchController: _searchControllerGolongan,
+            searchFocusNode: _focusNodeGolongan,
+            onSelect: (value) {
+              setModalState(() => _tempSelectedValueGolongan = value);
+            },
+            onClose: () => context.pop(),
+            onSubmit: () {
+              setState(() => _selectedGolongan = _tempSelectedValueGolongan);
+              context.pop();
+            },
+          );
+        },
+      ),
     );
   }
 
   void showPilihMrkMeterBottomSheet(BuildContext context) {
+    _tempSelectedValueMarkMeter = _selectedMarkMeter; // ✅ sync awal
     showModalBottomSheet(
       context: context,
+      enableDrag: true,
+      isDismissible: false,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const PilihMrkMeterBottomSheet(),
+      // builder: (context) => const PilihMrkMeterBottomSheet(),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          return PdamBottomSheetContent(
+            judul: Language.mrkMeter,
+            textTombol: Language.simpan,
+            setModalState: setModalState,
+            pdamData: _mrkMeter,
+            tempSelectedValue: _tempSelectedValueMarkMeter,
+            searchController: _searchControllerMarkMeter,
+            searchFocusNode: _focusNodeMarkMeter,
+            onSelect: (value) {
+              setModalState(() => _tempSelectedValueMarkMeter = value);
+            },
+            onClose: () => context.pop(),
+            onSubmit: () {
+              setState(() => _selectedMarkMeter = _tempSelectedValueMarkMeter);
+              context.pop();
+            },
+          );
+        },
+      ),
     );
   }
 }

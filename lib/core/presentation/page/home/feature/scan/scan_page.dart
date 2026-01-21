@@ -1,9 +1,21 @@
+import 'dart:async';
+
 import 'package:baca_meter/core/presentation/commons/methods/methods.dart';
 import 'package:baca_meter/core/presentation/commons/themes/color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:remixicon/remixicon.dart';
+
+import '../../../../commons/extensions/context_extension.dart';
+import '../../../../commons/language/language.dart';
+import '../../../../commons/routes/routes.dart';
+import '../../../../commons/themes/constants.dart';
+import '../../../../commons/themes/text_styel.dart';
+import '../../../../widget/loading/loading_widget.dart';
+import '../../../../widget/shimmer/shimmer_widget.dart';
 
 class ScanPage extends StatefulWidget {
   const ScanPage({super.key});
@@ -12,50 +24,195 @@ class ScanPage extends StatefulWidget {
   State<ScanPage> createState() => _ScanPageState();
 }
 
-class _ScanPageState extends State<ScanPage> with TickerProviderStateMixin {
-  late MobileScannerController _controller;
-  bool _flashOn = false;
+class _ScanPageState extends State<ScanPage>
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
 
-  // Animasi garis scan
+  MobileScannerController? controller;
+  StreamSubscription<BarcodeCapture>? subscription;
   late AnimationController _scanLineController;
   late Animation<double> _scanLineAnimation;
+
+  String? lastScannedCode;
+  DateTime? lastScanTime;
+  final scanCooldown = const Duration(seconds: 2);
 
   @override
   void initState() {
     super.initState();
+    // WidgetsBinding.instance.addObserver(this);
+    // // SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-    _controller = MobileScannerController(
-      facing: CameraFacing.back,
-      torchEnabled: false,
-      autoStart: true,
-      formats: [BarcodeFormat.qrCode],
-    );
+    // controller = initController();
+    // unawaited(controller!.start());
+    // lastScannedCode = null;
+    // lastScanTime = null;
 
-    // Inisialisasi animasi garis scan
+    // _fetchInitialData();
+    WidgetsBinding.instance.addObserver(this);
+
+    controller = initController();
+    unawaited(controller!.start());
+
+    lastScannedCode = null;
+    lastScanTime = null;
+
     _scanLineController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true); // 🔁 atas ↔ bawah
+
+    _scanLineAnimation = Tween<double>(begin: -1.0, end: 1.0).animate(
+      CurvedAnimation(parent: _scanLineController, curve: Curves.easeInOut),
     );
 
-    _scanLineAnimation =
-        Tween<double>(begin: 0.2, end: 0.8).animate(
-          CurvedAnimation(parent: _scanLineController, curve: Curves.linear),
-        )..addStatusListener((status) {
-          if (status == AnimationStatus.completed) {
-            _scanLineController.reverse();
-          } else if (status == AnimationStatus.dismissed) {
-            _scanLineController.forward();
-          }
-        });
+    _fetchInitialData();
+  }
 
-    _scanLineController.forward();
+  MobileScannerController initController() => MobileScannerController(
+    autoStart: false,
+    cameraResolution: const Size(1920, 1080),
+    detectionSpeed: DetectionSpeed.noDuplicates,
+    detectionTimeoutMs: 1000,
+    formats: [BarcodeFormat.qrCode],
+    returnImage: false,
+    torchEnabled: false,
+    invertImage: false,
+    autoZoom: false,
+    facing: CameraFacing.back,
+  );
+
+  void _fetchInitialData() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        // final homeNotifier = context.read<HomeNotifier>();
+        // final infoAccounts = homeNotifier.getInfoAccountResponse;
+        // final accounts = infoAccounts.result ?? [];
+        // final isAvailableBina = accounts.any(
+        //   (account) => account.digitalSavingAccountTypeId == 2,
+        // );
+
+        // if (accounts.length > 1 && isAvailableBina) {
+        //   context.read<ScanQrProvider>().setSelectedAccount(
+        //     homeNotifier.getWalletBankIna!,
+        //   );
+        // }
+      }
+    });
   }
 
   @override
-  void dispose() {
-    _controller.dispose();
+  void dispose() async {
     _scanLineController.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+    await controller?.dispose();
+    controller = null;
+    subscription?.cancel();
+
+    lastScannedCode = null;
+    lastScanTime = null;
+
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (controller == null || !controller!.value.hasCameraPermission) return;
+
+    switch (state) {
+      case AppLifecycleState.inactive:
+        debugPrint('AppLifecycleState.inactive');
+        _resetSubscription();
+        break;
+
+      case AppLifecycleState.resumed:
+        debugPrint('AppLifecycleState.resumed');
+        _restartScanner();
+        break;
+
+      case AppLifecycleState.paused:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.detached:
+        break;
+    }
+  }
+
+  void _resetSubscription() {
+    subscription?.cancel();
+    subscription = null;
+    unawaited(controller?.stop());
+    debugPrint('🔄 Scanner reset and subscription cancelled');
+  }
+
+  void _restartScanner() {
+    if (controller != null) {
+      debugPrint('🔄 Restarting scanner');
+      lastScanTime = DateTime.now();
+      controller!.start();
+      subscription = controller!.barcodes.listen(_onDetectBarcode);
+    }
+  }
+
+  void _onDetectBarcode(BarcodeCapture barcodeCapture) async {
+    // final barcode = findBarcodeAtCenter(
+    //   barcodeCapture,
+    //   DeviceOrientation.portraitUp,
+    // );
+    final barcode = barcodeCapture.barcodes.first.displayValue;
+
+    if (barcode == null) return;
+
+    final qrCode = barcode;
+    final now = DateTime.now();
+
+    final isDuplicate = lastScannedCode == qrCode;
+    final isInCooldown =
+        lastScanTime != null && now.difference(lastScanTime!) < scanCooldown;
+
+    if (isDuplicate && isInCooldown) {
+      debugPrint('⏱️ Duplicate QR within cooldown, ignoring: $qrCode');
+      return;
+    }
+
+    // Update last scan
+    lastScannedCode = qrCode;
+    lastScanTime = now;
+
+    // context.read<ScanQrProvider>().validateScanQr(
+    //   context: context,
+    //   qrCode: qrCode,
+    //   onLoading: () {
+    //     _resetSubscription();
+    //     showLoadingDialog(context, message: 'Memverifikasi QR kode');
+    //   },
+    //   onError: (message) {
+    //     _resetSubscription();
+    //     showErrorDialogWithSingleAction(
+    //       context,
+    //       title: 'Gagal Memverifikasi QR',
+    //       description: message,
+    //       onPositivePressed: () {
+    //         context.pop();
+    //         _restartScanner();
+    //       },
+    //     );
+    //   },
+    //   onSuccess: (redirectUrl) async {
+    _resetSubscription();
+    // if (redirectUrl.isNotEmpty) {
+    // final result = await context.pushNamed(
+    //   Routes.savingPaymentBINA,
+    // );
+    context.pushNamed(Routes.detailPelangganPage);
+
+    // if (result != null) {
+    //   if (result is String && result == PaymentStatus.cancelled) {
+    //     _resetSubscription();
+    //     _restartScanner();
+    //   }
+    // }
+    // }
+    //   },
+    // );
   }
 
   @override
@@ -64,165 +221,281 @@ class _ScanPageState extends State<ScanPage> with TickerProviderStateMixin {
       body: Stack(
         children: [
           // Background utama
-          Column(
-            children: [
-              _buildHeader(context),
-              Expanded(child: Container(color: baseWhite)),
-            ],
-          ),
+          _buildBackground(context),
 
-          Positioned(
-            top: 140,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              decoration: const BoxDecoration(
-                color: baseWhite,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
+          // Konten utama
+          _buildContent(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBackground(BuildContext context) {
+    final width = context.width;
+    final height = context.height;
+    return Stack(
+      children: [
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            height: height * 0.2,
+            clipBehavior: Clip.hardEdge,
+            decoration: BoxDecoration(color: primary500Base),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Image.asset(
+                    'assets/icon/home/ic_appbar.png',
+                    width: width * 0.5,
+                    fit: BoxFit.contain,
+                  ),
                 ),
-              ),
-              child: Column(
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        // 🔥 AREA BACKGROUND
+        Expanded(
+          flex: 2, // tinggi relatif (background)
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: defaultMargin.w,
+              top: 16.h,
+              right: defaultMargin.w,
+            ),
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  verticalSpace(20.h),
-
-                  // Area Scanner Live
-                  Expanded(
-                    child: Container(
-                      margin: EdgeInsets.symmetric(horizontal: 16.w),
-                      clipBehavior: Clip.hardEdge,
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Stack(
-                        children: [
-                          // Live Camera Preview
-                          MobileScanner(
-                            controller: _controller,
-                            onDetect: (capture) {
-                              final barcodes = capture.barcodes;
-                              if (barcodes.isNotEmpty) {
-                                final String? code = barcodes.first.rawValue;
-                                if (code != null) {
-                                  debugPrint('QR Code: $code');
-                                  // Opsional: hentikan scan
-                                  // _controller.stop();
-                                }
-                              }
-                            },
-                            fit: BoxFit.cover,
-                          ),
-
-                          // 🔴 Animasi Garis Scan Merah
-                          AnimatedBuilder(
-                            animation: _scanLineAnimation,
-                            builder: (context, child) {
-                              return Positioned(
-                                top:
-                                    _scanLineAnimation.value *
-                                    (MediaQuery.of(context).size.height - 200),
-                                left: 0,
-                                right: 0,
-                                child: Container(height: 2, color: Colors.red),
-                              );
-                            },
-                          ),
-
-                          // Tombol Flash (fungsional)
-                          Positioned(
-                            bottom: 10,
-                            right: 12.w,
-                            child: GestureDetector(
-                              onTap: () {
-                                _controller.toggleTorch();
-                                setState(() {
-                                  _flashOn = _controller.torchEnabled;
-                                });
-                                                            },
-                              child: Container(
-                                width: 40.w,
-                                height: 40.h,
-                                decoration: BoxDecoration(
-                                  color: baseWhite,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  _flashOn
-                                      ? Remix.flashlight_fill
-                                      : Remix.flashlight_line,
-                                  color: baseBlack,
-                                  size: 20,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                  GestureDetector(
+                    onTap: () => context.pop(),
+                    child: Icon(
+                      Remix.arrow_left_line,
+                      color: baseWhite,
+                      size: 20,
                     ),
                   ),
-
-                  verticalSpace(20.h),
-                  Padding(
-                    padding: EdgeInsets.only(bottom: 20.h),
+                  Expanded(
                     child: Text(
-                      'Arahkan kamera ke Kode QR',
-                      style: TextStyle(fontSize: 16.sp, color: text300),
+                      Language.scanQr,
                       textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20.sp,
+                        fontFamily: 'Inter',
+                        fontWeight: bold,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
           ),
-
-          const SafeArea(top: true, child: SizedBox()),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 200.h,
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: primary500Base,
-        image: const DecorationImage(
-          image: AssetImage('assets/icon/home/ic_appbar.png'),
-          fit: BoxFit.contain,
-          alignment: Alignment.centerRight,
         ),
-      ),
-      child: Column(
-        children: [
-          verticalSpace(60.h),
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Icon(Remix.arrow_left_line, color: baseWhite, size: 20),
+
+        // Content Bawah
+        Expanded(
+          flex: 8, // tinggi relatif (background)
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.only(
+              top: 24.h,
+              left: 16.w,
+              right: 16.w,
+              bottom: 16.h,
+            ),
+            clipBehavior: Clip.antiAlias,
+            decoration: ShapeDecoration(
+              color: Colors.white /* Color-Base-color-Background-Bg-white */,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
               ),
-              Expanded(
-                child: Center(
-                  child: Text(
-                    'Scan QR',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Area Scanner Live
+                Expanded(
+                  child: Container(
+                    // margin: EdgeInsets.symmetric(horizontal: 16.w),
+                    clipBehavior: Clip.hardEdge,
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Builder(
+                      builder: (context) {
+                        if (controller == null) {
+                          return const LoadingWidget();
+                        }
+
+                        return Stack(
+                          children: [
+                            // Live Camera Preview
+                            MobileScanner(
+                              controller: controller,
+                              onDetect: _onDetectBarcode,
+                              errorBuilder: (context, exception) =>
+                                  _onErrorWidget(context, exception),
+                              onDetectError: _onDetectError,
+                              placeholderBuilder: (_) => _onPlaceholder(),
+                              fit: BoxFit.cover,
+                            ),
+
+                           // 🔴 Animasi Garis Scan Merah
+                            AnimatedBuilder(
+                              animation: _scanLineAnimation,
+                              builder: (context, child) {
+                                return Align(
+                                  alignment: Alignment(
+                                    0,
+                                    _scanLineAnimation.value,
+                                  ),
+                                  child: Container(
+                                    height: 2.h,
+                                    margin: EdgeInsets.symmetric(
+                                      horizontal: 12.w,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.redAccent.withValues(
+                                        alpha: 0.9,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.redAccent.withValues(
+                                            alpha: 0.6,
+                                          ),
+                                          blurRadius: 8,
+                                          spreadRadius: 1,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+
+                            // // Tombol Flash (fungsional)
+                            Positioned(
+                              bottom: 16.h,
+                              right: 16.w,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  customBorder: const CircleBorder(),
+                                  onTap: () {
+                                    if (controller != null) {
+                                      controller!.toggleTorch();
+                                    }
+                                  },
+                                  splashColor: baseBlack.withValues(alpha: 0.5),
+                                  child: Ink(
+                                    padding: EdgeInsets.all(12.r),
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: baseWhite,
+                                    ),
+                                    child: Icon(
+                                      controller?.torchEnabled == true
+                                          ? Remix.flashlight_fill
+                                          : Remix.flashlight_line,
+                                      size: 24.w,
+                                      color: text700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 ),
-              ),
-              SizedBox(width: 20),
-            ],
+
+                verticalSpace(24.h),
+                Center(
+                  child: Text(
+                    Language.arahkanKameraKeKodeQr,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: text400,
+                      fontSize: 16.sp,
+                      fontFamily: 'Inter',
+                      fontWeight: medium,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
+        ),
+      ],
+    );
+  }
+
+  Widget _onPlaceholder() {
+    return const ShimmerWidget(width: double.infinity, height: double.infinity);
+  }
+
+  void _onDetectError(Object object, StackTrace stackTrace) {
+    debugPrint('onDetectError-scanQR: $object');
+    showCustomSnackBar(
+      context,
+      'Terjadi Kesalahan: $object',
+      Color(0xFFB7242D),
+    );
+  }
+
+  Widget _onErrorWidget(
+    BuildContext context,
+    MobileScannerException exception,
+  ) {
+    final messageDetails = exception.errorDetails?.message;
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Feather.alert_triangle, size: 36.sp, color: error800),
+        verticalSpace(12.h),
+        Text(
+          'Terjadi Kesalahan',
+          style: blackTextStyle.copyWith(
+            fontSize: 15.sp,
+            fontWeight: FontWeight.w500,
+            color: text700,
+            fontFamily: 'Inter',
+          ),
+        ),
+        verticalSpace(8.h),
+        Text(
+          messageDetails ?? 'Silahkan coba beberapa saat lagi',
+          style: blackTextStyle.copyWith(
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w400,
+            color: text700,
+            fontFamily: 'Inter',
+          ),
+        ),
+      ],
     );
   }
 }
