@@ -52,4 +52,8 @@ class Language {
   static String bacaan = 'Bacaan';
   static String bacaanUlang = 'Bacaan Ulang';
   static String cariRayon = 'Cari Rayon';
+
+  static String cariPelanggan = 'Cari Pelanggan';
+  static String listPelanggan = 'List Pelanggan';
+  static String uploaded = 'Uploaded';
 }
