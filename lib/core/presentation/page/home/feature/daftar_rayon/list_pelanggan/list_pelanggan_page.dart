@@ -604,7 +604,7 @@ class _ListPelangganPageState extends State<ListPelangganPage> {
         if (isUploaded)
           Container(
             width: double.infinity,
-            margin: EdgeInsets.only(left: 10.w),
+            margin: EdgeInsets.symmetric(horizontal: 10.w),
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
             decoration: ShapeDecoration(
               color: baseBackgroundLight,

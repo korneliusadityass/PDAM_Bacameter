@@ -177,29 +177,25 @@ class _LastDigitPageState extends State<LastDigitPage> {
                 ),
               ),
             ),
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              scrollDirection: Axis.vertical,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _inputValue.length == 3 ? 'Pencarian' : 'Riwayat Pencarian',
-                    style: TextStyle(
-                      color: text700,
-                      fontSize: 16.sp,
-                      fontFamily: 'Inter',
-                      fontWeight: bold,
-                    ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _inputValue.length == 3 ? 'Pencarian' : 'Riwayat Pencarian',
+                  style: TextStyle(
+                    color: text700,
+                    fontSize: 16.sp,
+                    fontFamily: 'Inter',
+                    fontWeight: bold,
                   ),
-                  verticalSpace(16.h),
+                ),
 
-                  _inputValue.length == 3
-                      ? _buildSearchResult()
-                      : _buildSearchHistory(),
-                ],
-              ),
+                // verticalSpace(16.h),
+                _inputValue.length == 3
+                    ? _buildSearchResult()
+                    : _buildSearchHistory(),
+              ],
             ),
           ),
         ),
@@ -214,34 +210,58 @@ class _LastDigitPageState extends State<LastDigitPage> {
 
     return ListView.separated(
       shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.zero,
       itemCount: _searchHistory.length,
-      separatorBuilder: (_, __) => Divider(height: 1, color: text300),
+      separatorBuilder: (_, __) => Column(
+        children: [
+          verticalSpace(8.h),
+          Divider(height: 0.5, color: borderDefault),
+          verticalSpace(8.h),
+        ],
+      ),
       itemBuilder: (context, index) {
         final item = _searchHistory[index];
-        return GestureDetector(
-          onTap: () {
-            // Ketika item riwayat diklik, isi input dengan lastDigits
-            setState(() {
-              _inputValue = item['lastDigits']!;
-              _searchResult = {
-                'nomor': item['fullNumber'],
-                'nama': item['name'],
-                'lokasi':
-                    'BONTOMANAI', // Anda bisa simpan lokasi juga jika perlu
-              };
-            });
-          },
-          child: ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(
-              item['name']!,
-              style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600),
-            ),
-            trailing: Text(
-              '*******${item['lastDigits']!}',
-              style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600),
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: index == _searchHistory.length - 1 ? 300.h : 0.h,
+            top: index == 0 ? 16.h : 0.h,
+          ),
+          child: GestureDetector(
+            onTap: () {
+              // Ketika item riwayat diklik, isi input dengan lastDigits
+              setState(() {
+                _inputValue = item['lastDigits']!;
+                _searchResult = {
+                  'nomor': item['fullNumber'],
+                  'nama': item['name'],
+                  'lokasi':
+                      'BONTOMANAI', // Anda bisa simpan lokasi juga jika perlu
+                };
+              });
+            },
+            child: ListTile(
+              dense: true,
+              visualDensity: VisualDensity.compact,
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                item['name']!,
+                style: TextStyle(
+                  color: baseBlack,
+                  fontSize: 14.sp,
+                  fontFamily: 'Inter',
+                  fontWeight: regular,
+                ),
+              ),
+              trailing: Text(
+                '*******${item['lastDigits']!}',
+                style: TextStyle(
+                  color: baseBlack,
+                  fontSize: 14.sp,
+                  fontFamily: 'Inter',
+                  fontWeight: regular,
+                ),
+              ),
             ),
           ),
         );
@@ -258,72 +278,89 @@ class _LastDigitPageState extends State<LastDigitPage> {
     final last3Digits = fullNumber.substring(fullNumber.length - 3);
     final prefix = fullNumber.substring(0, fullNumber.length - 3);
 
-    return GestureDetector(
-      onTap: () {
-        // Simpan ke riwayat sebelum navigasi
-        _addToSearchHistory(last3Digits, name, fullNumber);
+    return Column(
+      children: [
+        verticalSpace(16.h),
+        GestureDetector(
+          onTap: () {
+            // Simpan ke riwayat sebelum navigasi
+            _addToSearchHistory(last3Digits, name, fullNumber);
 
-        context.pushNamed(Routes.detailPelangganPage);
-      },
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        height: 120.h,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: baseWhite,
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: borderDark),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Nomor Pelanggan dengan highlight 3 digit terakhir
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: prefix,
-                    style: TextStyle(fontSize: 12.sp, color: text500Base),
-                  ),
-                  TextSpan(
-                    text: last3Digits,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: secondary500,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+            context.pushNamed(Routes.detailPelangganPage);
+          },
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+            width: double.infinity,
+            decoration: ShapeDecoration(
+              color: Colors.white /* Color-Base-color-Background-Bg-white */,
+              shape: RoundedRectangleBorder(
+                side: BorderSide(width: 1, color: borderDefault),
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
-            verticalSpace(8.h), // ⬅️ Tambah spacing
-            Text(
-              name,
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.bold,
-                color: text500Base,
-              ),
-            ),
-            verticalSpace(8.h), // ⬅️ Tambah spacing
-            Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Remix.map_pin_fill, size: 16, color: baseBlack),
-                horizontalSpace(4.w),
-                Expanded(
-                  // ⬅️ Agar text tidak overflow
-                  child: Text(
-                    location,
-                    style: TextStyle(fontSize: 14.sp, color: text600),
-                    overflow: TextOverflow.ellipsis,
+                // Nomor Pelanggan dengan highlight 3 digit terakhir
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: prefix,
+                        style: TextStyle(
+                          color: text700,
+                          fontSize: 14.sp,
+                          fontFamily: 'Inter',
+                          fontWeight: regular,
+                        ),
+                      ),
+                      TextSpan(
+                        text: last3Digits,
+                        style: TextStyle(
+                          color: secondary500,
+                          fontSize: 14.sp,
+                          fontFamily: 'Inter',
+                          fontWeight: bold,
+                        ),
+                      ),
+                    ],
                   ),
+                ),
+                verticalSpace(8.h),
+                Text(
+                  name,
+                  style: TextStyle(
+                    color: text700,
+                    fontSize: 16.sp,
+                    fontFamily: 'Inter',
+                    fontWeight: bold,
+                  ),
+                ),
+                verticalSpace(8.h),
+                Row(
+                  children: [
+                    Icon(Remix.map_pin_fill, size: 16, color: text500Base),
+                    horizontalSpace(8.w),
+                    Expanded(
+                      child: Text(
+                        location,
+                        style: TextStyle(
+                          color: text700,
+                          fontSize: 14.sp,
+                          fontFamily: 'Inter',
+                          fontWeight: regular,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -613,12 +650,11 @@ class _LastDigitPageState extends State<LastDigitPage> {
   }
 
   Widget _buildEmpty() {
-    return SingleChildScrollView(
+    return Expanded(
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            verticalSpace(40.h),
             Image.asset(
               'assets/images/img_empty_fix.png',
               width: 220.w,
@@ -632,7 +668,9 @@ class _LastDigitPageState extends State<LastDigitPage> {
                 fontSize: 12.sp,
                 fontWeight: FontWeight.bold,
                 color: text600,
+                fontFamily: 'Inter',
               ),
+              textAlign: TextAlign.center,
             ),
             verticalSpace(8.h),
           ],
