@@ -1,35 +1,89 @@
+import 'package:shared_preferences/shared_preferences.dart';
 
-
-
+import '../../data/injection/injection.dart';
 
 class SharedPrefsHelper {
   // Key: Onboarding
-  static const String isFirstLaunchKey = 'isFirstLaunch';
-  static const String deviceInfoKey = 'deviceInfo';
+  // static const String isFirstLaunchKey = 'isFirstLaunch';
+  // static const String deviceInfoKey = 'deviceInfo';
 
-  // Key: Authentication
-  static const String userTokenKey = 'userToken';
+  // // Key: Authentication
+  // static const String userTokenKey = 'userToken';
+
+  // static const String isSignOtpKey = 'isSignOtp';
+  // static const String userLocalKey = 'userLocal';
+  // static const String username = 'username';
+  // static const String appleEmailKey = 'appleEmail';
+  // static const String appleUsernameKey = 'appleUsername';
+
+  // // Key: User
+  // static const String userAttributeKey = 'userAttribute';
+
+  // // Key: User Last Location
+  // static const String userLastLocationKey = 'userLastLocation';
+
+  // // Key: Showcase
+  // static const String showcaseHomePageTransferBinaKey =
+  //     'showcaseHomeTransferBina';
+  // static const String showcaseHomePageMutasiBinaKey = 'showcaseHomeMutasiBina';
+  // static const String showcaseTransferPageBinaKey = 'showcaseTransferPageBina';
+
+  // // Key: Token LMS
+  // static const String tokenLMS = 'tokenLMS';
+
+  // Key: Login
+  // Authentication
   static const String isSignedInKey = 'isSignedIn';
-  static const String isSignOtpKey = 'isSignOtp';
-  static const String userLocalKey = 'userLocal';
-  static const String username = 'username';
-  static const String appleEmailKey = 'appleEmail';
-  static const String appleUsernameKey = 'appleUsername';
+  // onCheck Choose PDAM
+  static const String formLogin = 'formLogin';
 
-  // Key: User
-  static const String userAttributeKey = 'userAttribute';
+  // choose PDAM (String)
+  static const String selectedPdamKey = 'selectedPdam';
 
-  // Key: User Last Location
-  static const String userLastLocationKey = 'userLastLocation';
+  /// ambil PDAM yang dipilih
+  static Future<String?> getSelectedPdam() async {
+    final prefs = sl<SharedPreferences>();
+    return prefs.getString(selectedPdamKey);
+  }
 
-  // Key: Showcase
-  static const String showcaseHomePageTransferBinaKey =
-      'showcaseHomeTransferBina';
-  static const String showcaseHomePageMutasiBinaKey = 'showcaseHomeMutasiBina';
-  static const String showcaseTransferPageBinaKey = 'showcaseTransferPageBina';
+  /// set / ubah PDAM
+  static Future<void> setSelectedPdam(String pdam) async {
+    final prefs = sl<SharedPreferences>();
+    await prefs.setString(selectedPdamKey, pdam);
+  }
 
-  // Key: Token LMS
-  static const String tokenLMS = 'tokenLMS';
+  /// reset pilihan PDAM saja
+  static Future<void> resetSelectedPdam() async {
+    final prefs = sl<SharedPreferences>();
+    await prefs.remove(selectedPdamKey);
+  }
+
+  static Future<bool> isFormLogin() async {
+    final prefs = sl<SharedPreferences>();
+    return prefs.getBool(formLogin) ?? false;
+  }
+
+  static Future setFormLogin(bool isFormLogin) async {
+    final prefs = sl<SharedPreferences>();
+    await prefs.setBool(formLogin, isFormLogin);
+  }
+
+  // Sementara
+  static Future<bool> isSignedIn() async {
+    final prefs = sl<SharedPreferences>();
+    return prefs.getBool(isSignedInKey) ?? false;
+  }
+
+  static Future setSignedIn(bool isSignedIn) async {
+    final prefs = sl<SharedPreferences>();
+    await prefs.setBool(isSignedInKey, isSignedIn);
+  }
+
+  static Future logoutUser() async {
+    final prefs = sl<SharedPreferences>();
+
+    prefs.remove(isSignedInKey);
+  }
 
   // static Future<bool> isFirstLaunch() async {
   //   final prefs = sl<SharedPreferences>();

@@ -18,19 +18,19 @@ class LoginNotifier extends ChangeNotifier {
   //   this._loginAppleUseCase,
   // );
 
-  bool _showLoginForm = false; // true jika sudah pilih PDAM
+  // bool _showLoginForm = false; // true jika sudah pilih PDAM
 
-  bool get showLoginForm => _showLoginForm;
+  // bool get showLoginForm => _showLoginForm;
 
-  void setShowLoginForm(bool value) {
-    _showLoginForm = value;
-    notifyListeners();
-  }
+  // void setShowLoginForm(bool value) {
+  //   _showLoginForm = value;
+  //   notifyListeners();
+  // }
 
-  void resetFormLogin() {
-    _showLoginForm = false;
-    notifyListeners();
-  }
+  // void resetFormLogin() {
+  //   _showLoginForm = false;
+  //   notifyListeners();
+  // }
 
 
   final _switchFormState = SwitchFormState.phoneNumber;

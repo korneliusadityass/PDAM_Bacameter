@@ -471,13 +471,6 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
   Widget _buildRayonItem(RayonTableData rayon) {
     return GestureDetector(
       onTap: () {
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        //     builder: (context) =>
-        //         ListPelangganPage(rayonId: rayon.id, rayonName: rayon.nama),
-        //   ),
-        // );
         context.pushNamed(
           Routes.listPelangganPage,
           queryParameters: {'rayonId': rayon.id, 'rayonName': rayon.nama},

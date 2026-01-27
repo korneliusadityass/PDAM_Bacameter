@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:baca_meter/core/presentation/page/home/feature/scan/scan_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
@@ -76,11 +78,31 @@ class AppRouter {
       GoRoute(
         path: '/detail-pelanggan-page',
         name: Routes.detailPelangganPage,
-        builder: (context, state) => const DetailPelangganPage(),
+        builder: (context, state) {
+          // return DetailPelangganPage();
+          final encodedTransactionNumber =
+              state.uri.queryParameters['transactionNumber'];
+
+          String? transactionNumber;
+
+          if (encodedTransactionNumber != null &&
+              encodedTransactionNumber.isNotEmpty) {
+            try {
+              transactionNumber = utf8.decode(
+                base64Decode(encodedTransactionNumber),
+              );
+              debugPrint('TES : $transactionNumber');
+            } catch (e) {
+              // debugPrint("Error decoding transactionNumber: $e");
+              transactionNumber = null; // Set default jika decoding gagal
+            }
+          }
+
+          return DetailPelangganPage(transactionNumber: transactionNumber);
+        },
       ),
     ],
-    // initialLocation: '/splash',
-    initialLocation: '/main-page',
+    initialLocation: '/splash',
     debugLogDiagnostics: kDebugMode ? true : false,
   );
 }

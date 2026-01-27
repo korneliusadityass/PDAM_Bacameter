@@ -1,8 +1,8 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'database.dart';
+// part of 'database.dart';
+part of 'app_database.dart';
 
-// ignore_for_file: type=lint
 class $RayonTableTable extends RayonTable
     with TableInfo<$RayonTableTable, RayonTableData> {
   @override

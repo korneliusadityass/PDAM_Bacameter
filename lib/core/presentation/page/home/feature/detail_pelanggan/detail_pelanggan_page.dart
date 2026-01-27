@@ -18,7 +18,8 @@ import '../../../../commons/themes/text_styel.dart';
 import '../../../../widget/bottom_sheet_pilih_data/bottom_sheet_pilih_data.dart';
 
 class DetailPelangganPage extends StatefulWidget {
-  const DetailPelangganPage({super.key});
+  final String? transactionNumber;
+  const DetailPelangganPage({super.key, required this.transactionNumber});
 
   @override
   State<DetailPelangganPage> createState() => _DetailPelangganPageState();
@@ -40,9 +41,11 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
   String? _selectedMarkMeter;
   String? _tempSelectedValueMarkMeter; // ✅ pindahkan ke page
 
-  final TextEditingController _searchControllerGolongan = TextEditingController();
+  final TextEditingController _searchControllerGolongan =
+      TextEditingController();
   final FocusNode _focusNodeGolongan = FocusNode();
-  final TextEditingController _searchControllerMarkMeter = TextEditingController();
+  final TextEditingController _searchControllerMarkMeter =
+      TextEditingController();
   final FocusNode _focusNodeMarkMeter = FocusNode();
 
   final List<Map<String, String>> _golongan = [
@@ -149,7 +152,9 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
                   ),
                   Expanded(
                     child: Text(
-                      Language.konfirmasi,
+                      widget.transactionNumber != null
+                          ? Language.detailBacameter
+                          : Language.konfirmasi,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.white,
@@ -293,7 +298,7 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
             ),
             child: Center(
               child: Text(
-                'Detail Pelanggan',
+                Language.detailPelanggan,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: primary500Base,

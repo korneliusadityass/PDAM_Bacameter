@@ -9,6 +9,7 @@ import 'package:remixicon/remixicon.dart';
 import '../../commons/extensions/context_extension.dart';
 import '../../commons/routes/routes.dart';
 import '../../commons/themes/text_styel.dart';
+import '../../manager/shared_preferences_helper.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -225,6 +226,7 @@ class ProfilePage extends StatelessWidget {
           GestureDetector(
             onTap: () {
               context.goNamed(Routes.loginPage);
+              SharedPrefsHelper.logoutUser();
             },
             child: Container(
               width: double.infinity,

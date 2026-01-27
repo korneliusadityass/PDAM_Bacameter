@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:baca_meter/core/presentation/commons/methods/methods.dart';
 import 'package:baca_meter/core/presentation/commons/themes/color.dart';
@@ -26,7 +27,6 @@ class ScanPage extends StatefulWidget {
 
 class _ScanPageState extends State<ScanPage>
     with WidgetsBindingObserver, SingleTickerProviderStateMixin {
-
   MobileScannerController? controller;
   StreamSubscription<BarcodeCapture>? subscription;
   late AnimationController _scanLineController;
@@ -202,7 +202,14 @@ class _ScanPageState extends State<ScanPage>
     // final result = await context.pushNamed(
     //   Routes.savingPaymentBINA,
     // );
-    context.pushNamed(Routes.detailPelangganPage);
+    // context.pushNamed(Routes.detailPelangganPage);
+    context.pushNamed(
+      Routes.detailPelangganPage,
+      queryParameters: {
+        // 'transactionNumber': data.transactionNumber ?? ''
+        'transactionNumber': base64Encode(utf8.encode('Testing')),
+      },
+    );
 
     // if (result != null) {
     //   if (result is String && result == PaymentStatus.cancelled) {
@@ -360,7 +367,7 @@ class _ScanPageState extends State<ScanPage>
                               fit: BoxFit.cover,
                             ),
 
-                           // 🔴 Animasi Garis Scan Merah
+                            // 🔴 Animasi Garis Scan Merah
                             AnimatedBuilder(
                               animation: _scanLineAnimation,
                               builder: (context, child) {

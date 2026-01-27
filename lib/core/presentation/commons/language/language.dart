@@ -56,4 +56,6 @@ class Language {
   static String cariPelanggan = 'Cari Pelanggan';
   static String listPelanggan = 'List Pelanggan';
   static String uploaded = 'Uploaded';
+  static String detailPelanggan = 'Detail Pelanggan';
+  static String detailBacameter = 'Detail Bacameter';
 }

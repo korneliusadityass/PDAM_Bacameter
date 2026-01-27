@@ -3,15 +3,14 @@ import 'package:baca_meter/core/presentation/commons/language/language.dart';
 import 'package:baca_meter/core/presentation/commons/methods/methods.dart';
 import 'package:baca_meter/core/presentation/commons/themes/color.dart';
 import 'package:baca_meter/core/presentation/commons/themes/text_styel.dart';
-import 'package:baca_meter/core/presentation/page/auth/login/provider/login_notifier.dart';
 import 'package:baca_meter/core/presentation/widget/form_field_outline/form_field_outline.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:remixicon/remixicon.dart';
 
 import '../../../commons/routes/routes.dart';
+import '../../../manager/shared_preferences_helper.dart';
 import '../../../widget/bottom_sheet_pilih_data/bottom_sheet_pilih_data.dart';
 import '../../../widget/dropdown/form_dropdown.dart';
 
@@ -47,6 +46,25 @@ class _LoginPageState extends State<LoginPage> {
     {'isiList': 'PDAM F'},
     {'isiList': 'PDAM G'},
   ];
+
+  bool? showLoginForm = false;
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+
+      final result = await SharedPrefsHelper.isFormLogin();
+      final selectedPDAM = await SharedPrefsHelper.getSelectedPdam();
+
+      if (!mounted) return;
+      setState(() {
+        showLoginForm = result;
+        _selectedPdam = selectedPDAM;
+      });
+    });
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -116,64 +134,59 @@ class _LoginPageState extends State<LoginPage> {
                       child: Column(
                         children: [
                           // Konten utama
-                          Selector<LoginNotifier, bool>(
-                            selector: (context, provider) =>
-                                provider.showLoginForm,
-                            builder: (context, showLoginForm, child) {
-                              return Column(
-                                children: [
-                                  Text(
-                                    showLoginForm
-                                        ? Language.masuk
-                                        : Language.selamatDatang,
-                                    style: TextStyle(
-                                      fontFamily: 'Inter',
-                                      fontSize: 20.sp,
-                                      fontWeight: FontWeight.w700,
-                                      color: text700,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  verticalSpace(8.h),
-                                  Text(
-                                    showLoginForm
-                                        ? Language
-                                              .gunakanAkunYangTelahdiberikanOlehPerusahaan
-                                        : Language
-                                              .silahkanPilihPDAMTempatAndaBerkerjaTerlebihDahulu,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontFamily: 'Inter',
-                                      fontSize: 14.sp,
-                                      color: text400,
-                                      height: 1.4,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                  verticalSpace(24.h),
+                          Column(
+                            children: [
+                              Text(
+                                showLoginForm == true
+                                    ? Language.masuk
+                                    : Language.selamatDatang,
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 20.sp,
+                                  fontWeight: FontWeight.w700,
+                                  color: text700,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              verticalSpace(8.h),
+                              Text(
+                                showLoginForm == true
+                                    ? Language
+                                          .gunakanAkunYangTelahdiberikanOlehPerusahaan
+                                    : Language
+                                          .silahkanPilihPDAMTempatAndaBerkerjaTerlebihDahulu,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 14.sp,
+                                  color: text400,
+                                  height: 1.4,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                              verticalSpace(24.h),
 
-                                  // Tampilkan SettingsDialog atau form login
-                                  if (!context
-                                      .read<LoginNotifier>()
-                                      .showLoginForm)
-                                    // _buildSettingsDialogWidget()
-                                    _buildWidgetPilihPDAM()
-                                  else
-                                    Column(
-                                      children: [
-                                        _buildUsernameLogin(),
-                                        verticalSpace(16.h),
-                                        _buildPasswordLogin(),
-                                      ],
-                                    ),
+                              // Tampilkan SettingsDialog atau form login
+                              // if (!context
+                              //     .read<LoginNotifier>()
+                              //     .showLoginForm)
+                              if (showLoginForm == false)
+                                // _buildSettingsDialogWidget()
+                                _buildWidgetPilihPDAM()
+                              else
+                                Column(
+                                  children: [
+                                    _buildUsernameLogin(),
+                                    verticalSpace(16.h),
+                                    _buildPasswordLogin(),
+                                  ],
+                                ),
 
-                                  verticalSpace(24.h),
+                              verticalSpace(24.h),
 
-                                  // Tombol: "Lanjutkan" atau "Masuk"
-                                  _buildLoginButton(),
-                                ],
-                              );
-                            },
+                              // Tombol: "Lanjutkan" atau "Masuk"
+                              _buildLoginButton(),
+                            ],
                           ),
                         ],
                       ),
@@ -194,91 +207,85 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _buildFooter() {
-    return Selector<LoginNotifier, bool>(
-      selector: (context, provider) => provider.showLoginForm,
-      builder: (context, showLoginForm, child) {
-        return SizedBox(
-          width: double.infinity,
-          child: Stack(
-            alignment: Alignment.center,
+    return SizedBox(
+      width: double.infinity,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    Language.poweredBy,
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 10.sp,
-                      color: text700,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  verticalSpace(4.h),
-                  Image.asset(
-                    'assets/icon/login/ic_logo_primary_mkp.png',
-                    width: 85.w,
-                    height: 24.h,
-                  ),
-                ],
-              ),
-
-              if (showLoginForm)
-                Positioned(
-                  right: 16,
-                  child: GestureDetector(
-                    onTap: _bottomSheetPengaturanPDAM,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: baseSection,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        Remix.settings_3_line,
-                        color: primary500Base,
-                        size: 24.sp,
-                      ),
-                    ),
-                  ),
+              Text(
+                Language.poweredBy,
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 10.sp,
+                  color: text700,
+                  fontWeight: FontWeight.w600,
                 ),
+              ),
+              verticalSpace(4.h),
+              Image.asset(
+                'assets/icon/login/ic_logo_primary_mkp.png',
+                width: 85.w,
+                height: 24.h,
+              ),
             ],
           ),
-        );
-      },
+
+          if (showLoginForm == true)
+            Positioned(
+              right: 16,
+              child: GestureDetector(
+                onTap: _bottomSheetPengaturanPDAM,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: baseSection,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Remix.settings_3_line,
+                    color: primary500Base,
+                    size: 24.sp,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
   Widget _buildLoginButton() {
-    return Selector<LoginNotifier, bool>(
-      selector: (context, provider) => provider.showLoginForm,
-      builder: (context, showLoginForm, child) {
-        return GestureDetector(
-          onTap: showLoginForm ? _login : _onContinuePressed,
-          child: Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
-            clipBehavior: Clip.antiAlias,
-            decoration: ShapeDecoration(
-              color: primary500Base /* Color-Brand-color-Primary-Primary-5 */,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: Center(
-              child: Text(
-                showLoginForm ? Language.masuk : Language.lanjutkan,
-                style: TextStyle(
-                  color: baseWhite,
-                  fontSize: 14.sp,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+    return GestureDetector(
+      onTap: () async {
+        if (showLoginForm == true) {
+          await _login();
+        } else {
+          await _onContinuePressed();
+        }
+      },
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+        clipBehavior: Clip.antiAlias,
+        decoration: ShapeDecoration(
+          color: primary500Base /* Color-Brand-color-Primary-Primary-5 */,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        child: Center(
+          child: Text(
+            showLoginForm == true ? Language.masuk : Language.lanjutkan,
+            style: TextStyle(
+              color: baseWhite,
+              fontSize: 14.sp,
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w500,
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -320,286 +327,6 @@ class _LoginPageState extends State<LoginPage> {
       enableDrag: true,
       isDismissible: false,
       isScrollControlled: true,
-      // builder: (context) => StatefulBuilder(
-      //   builder: (BuildContext context, StateSetter setModalState) {
-      //     return
-      //     // penambahan SafeArea dan SizedBox
-      //     SafeArea(
-      //       top: false,
-      //       child: SizedBox(
-      //         height:
-      //             MediaQuery.of(context).size.height * 0.75, // ✅ FIXED HEIGHT
-      //         child: Container(
-      //           width: double.infinity,
-      //           decoration: BoxDecoration(
-      //             color: neutralColor1,
-      //             shape: BoxShape.rectangle,
-      //             borderRadius: BorderRadius.only(
-      //               topLeft: Radius.circular(20.r),
-      //               topRight: Radius.circular(20.r),
-      //             ),
-      //           ),
-      //           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-      //           child:
-      //               // SingleChildScrollView(
-      //               //   child:
-      //               Column(
-      //                 crossAxisAlignment: CrossAxisAlignment.start,
-      //                 children: [
-      //                   // Header
-      //                   Row(
-      //                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      //                     children: [
-      //                       Text(
-      //                         Language.pilihPDAM,
-      //                         style: TextStyle(
-      //                           fontFamily: 'Inter',
-      //                           fontSize: 16.sp,
-      //                           fontWeight: bold,
-      //                           color: text700,
-      //                         ),
-      //                       ),
-      //                       GestureDetector(
-      //                         onTap: () => context.pop(),
-      //                         child: Icon(Remix.close_line, size: 24),
-      //                       ),
-      //                     ],
-      //                   ),
-      //                   verticalSpace(16.h),
-
-      //                   // Search Field
-      //                   Container(
-      //                     padding: const EdgeInsets.symmetric(
-      //                       horizontal: 16,
-      //                       vertical: 12,
-      //                     ),
-      //                     clipBehavior: Clip.antiAlias,
-      //                     decoration: ShapeDecoration(
-      //                       color: Colors
-      //                           .white /* Color-Base-color-Background-Bg-white */,
-      //                       shape: RoundedRectangleBorder(
-      //                         side: BorderSide(width: 1, color: borderDefault),
-      //                         borderRadius: BorderRadius.circular(8),
-      //                       ),
-      //                     ),
-      //                     child: TextFormField(
-      //                       controller: onSearchPDAMController,
-      //                       focusNode: searchPDAMFocusNode,
-      //                       onTapOutside: (_) => searchPDAMFocusNode.unfocus(),
-      //                       onFieldSubmitted: (value) {},
-      //                       onChanged: (value) {
-      //                         setModalState(() {
-      //                           // _filteredPdamData = _pdamData.where((item) {
-      //                           //   final name = (item['isiList'] ?? '')
-      //                           //       .toString()
-      //                           //       .toLowerCase();
-      //                           //   return name.contains(value.toLowerCase());
-      //                           // }).toList();
-      //                         });
-      //                       },
-      //                       decoration: InputDecoration(
-      //                         isDense: true, // 🔹 penting
-      //                         contentPadding:
-      //                             EdgeInsets.zero, // 🔹 hapus padding bawaan
-      //                         border: InputBorder.none,
-
-      //                         // 🔍 Icon di dalam TextFormField
-      //                         prefixIcon: Icon(
-      //                           Remix.search_2_line,
-      //                           color: text500Base,
-      //                           size: 24,
-      //                         ),
-
-      //                         // // 🔹 hilangkan padding bawaan prefixIcon
-      //                         prefixIconConstraints: const BoxConstraints(
-      //                           minWidth: 20,
-      //                           minHeight: 20,
-      //                         ),
-      //                         hintText: Language.cari,
-      //                         hintStyle: TextStyle(
-      //                           color: text300,
-      //                           fontSize: 14.sp,
-      //                           fontFamily: 'Inter',
-      //                           fontWeight: medium,
-      //                         ),
-      //                       ),
-      //                     ),
-      //                   ),
-      //                   verticalSpace(16.h),
-
-      //                   // List PDAM
-      //                   Expanded(
-      //                     child: _pdamData.isEmpty
-      //                         ? Center(
-      //                             child: Text(
-      //                               'Tidak ada data PDAM',
-      //                               style: TextStyle(
-      //                                 fontSize: 14.sp,
-      //                                 color: text400,
-      //                                 fontFamily: 'Inter',
-      //                               ),
-      //                             ),
-      //                           )
-      //                         : ListView.builder(
-      //                             shrinkWrap: true,
-      //                             physics: const BouncingScrollPhysics(),
-      //                             itemCount: _pdamData.length,
-      //                             itemBuilder: (context, index) {
-      //                               final item = _pdamData[index];
-      //                               final value = item['isiList'] ?? '';
-      //                               final isSelected =
-      //                                   _tempSelectedValue == value;
-
-      //                               return GestureDetector(
-      //                                 onTap: () {
-      //                                   setModalState(() {
-      //                                     _tempSelectedValue = value;
-      //                                   });
-      //                                 },
-      //                                 child: Container(
-      //                                   width: double.infinity,
-      //                                   padding: EdgeInsets.symmetric(
-      //                                     vertical: 12.h,
-      //                                   ),
-      //                                   decoration: ShapeDecoration(
-      //                                     color: Colors
-      //                                         .white /* Color-Base-color-Background-Bg-white */,
-      //                                     shape: RoundedRectangleBorder(
-      //                                       borderRadius: BorderRadius.circular(
-      //                                         8,
-      //                                       ),
-      //                                     ),
-      //                                   ),
-      //                                   child: Row(
-      //                                     mainAxisSize: MainAxisSize.min,
-      //                                     mainAxisAlignment:
-      //                                         MainAxisAlignment.center,
-      //                                     crossAxisAlignment:
-      //                                         CrossAxisAlignment.center,
-      //                                     spacing: 16,
-      //                                     children: [
-      //                                       if (isSelected) ...[
-      //                                         Container(
-      //                                           width: 24,
-      //                                           height: 24,
-      //                                           decoration: ShapeDecoration(
-      //                                             color: Colors.white,
-      //                                             shape: RoundedRectangleBorder(
-      //                                               side: BorderSide(
-      //                                                 width: 1,
-      //                                                 color: primary500Base,
-      //                                               ),
-      //                                               borderRadius:
-      //                                                   BorderRadius.circular(
-      //                                                     68,
-      //                                                   ),
-      //                                             ),
-      //                                           ),
-      //                                           child: Center(
-      //                                             child: Container(
-      //                                               width: 12,
-      //                                               height: 12,
-      //                                               decoration: ShapeDecoration(
-      //                                                 color: primary500Base,
-      //                                                 shape: const OvalBorder(),
-      //                                               ),
-      //                                             ),
-      //                                           ),
-      //                                         ),
-      //                                       ] else ...[
-      //                                         Container(
-      //                                           width: 24,
-      //                                           height: 24,
-      //                                           clipBehavior: Clip.antiAlias,
-      //                                           decoration: ShapeDecoration(
-      //                                             color: Colors
-      //                                                 .white /* Color-Base-color-Background-Bg-white */,
-      //                                             shape: RoundedRectangleBorder(
-      //                                               side: BorderSide(
-      //                                                 width: 1,
-      //                                                 color: const Color(
-      //                                                   0xFFE6E6E6,
-      //                                                 ),
-      //                                               ),
-      //                                               borderRadius:
-      //                                                   BorderRadius.circular(
-      //                                                     68,
-      //                                                   ),
-      //                                             ),
-      //                                           ),
-      //                                         ),
-      //                                       ],
-
-      //                                       Expanded(
-      //                                         child: Text(
-      //                                           value,
-      //                                           style: TextStyle(
-      //                                             color: text700,
-      //                                             fontSize: 14.sp,
-      //                                             fontFamily: 'Inter',
-      //                                             fontWeight: semiBold,
-      //                                           ),
-      //                                         ),
-      //                                       ),
-      //                                     ],
-      //                                   ),
-      //                                 ),
-      //                               );
-      //                             },
-      //                           ),
-      //                   ),
-
-      //                   verticalSpace(16.h),
-
-      //                   // Tombol Pilih
-      //                   GestureDetector(
-      //                     onTap: () {
-      //                       if (_tempSelectedValue != null) {
-      //                         setState(() {
-      //                           _selectedPdam = _tempSelectedValue;
-      //                         });
-      //                         if (redirectFrom == 'setting') {
-      //                           _passwordPDAMController.clear();
-      //                         }
-      //                         context.pop();
-      //                       }
-      //                     },
-      //                     child: Container(
-      //                       width: double.infinity,
-      //                       padding: EdgeInsets.symmetric(
-      //                         horizontal: 16.w,
-      //                         vertical: 12.h,
-      //                       ),
-      //                       clipBehavior: Clip.antiAlias,
-      //                       decoration: ShapeDecoration(
-      //                         color: _tempSelectedValue != null
-      //                             ? primary500Base
-      //                             : primary500Base.withValues(alpha: 0.5),
-      //                         shape: RoundedRectangleBorder(
-      //                           borderRadius: BorderRadius.circular(8),
-      //                         ),
-      //                       ),
-      //                       child: Text(
-      //                         Language.pilih,
-      //                         textAlign: TextAlign.center,
-      //                         style: TextStyle(
-      //                           color: Colors
-      //                               .white /* Color-Base-color-Text-Text-1 */,
-      //                           fontSize: 14.sp,
-      //                           fontFamily: 'Inter',
-      //                           fontWeight: medium,
-      //                         ),
-      //                       ),
-      //                     ),
-      //                   ),
-      //                 ],
-      //               ),
-      //         ),
-      //       ),
-      //     );
-      //   },
-      // ),
-
       // New
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) {
@@ -615,11 +342,21 @@ class _LoginPageState extends State<LoginPage> {
               setModalState(() => _tempSelectedValue = value);
             },
             onClose: () => context.pop(),
-            onSubmit: () {
-              setState(() => _selectedPdam = _tempSelectedValue);
+            onSubmit: () async {
+              await SharedPrefsHelper.setSelectedPdam(
+                _tempSelectedValue.toString(),
+              );
+
+              if (!context.mounted) return;
+
+              setState(() {
+                _selectedPdam = _tempSelectedValue;
+              });
+
               if (redirectFrom == 'setting') {
                 _passwordPDAMController.clear();
               }
+
               context.pop();
             },
           );
@@ -660,26 +397,30 @@ class _LoginPageState extends State<LoginPage> {
     ),
   );
 
-  void _onContinuePressed() {
+  Future<void> _onContinuePressed() async {
     if (_selectedPdam == null) {
       _showDialog('Error', 'Harap pilih PDAM terlebih dahulu');
       return;
     }
-    context.read<LoginNotifier>().setShowLoginForm(true);
+    // context.read<LoginNotifier>().setShowLoginForm(true);
+    await SharedPrefsHelper.setFormLogin(true);
+    setState(() => showLoginForm = true);
   }
 
-  void _login() {
-    String username = _usernameLoginController.text;
-    String password = _passwordLoginController.text;
-
-    debugPrint('Username: $username');
-    debugPrint('Password: $password');
+  Future<void> _login() async {
+    final username = _usernameLoginController.text;
+    final password = _passwordLoginController.text;
 
     if (username.isEmpty || password.isEmpty) {
       _showDialog('Error', 'Harap isi username dan password');
-    } else {
-      context.goNamed(Routes.mainPage);
+      return;
     }
+
+    await SharedPrefsHelper.setSignedIn(true);
+
+    if (!mounted) return;
+
+    context.goNamed(Routes.mainPage);
   }
 
   void _showDialog(String title, String message) {
