@@ -7,11 +7,15 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:remixicon/remixicon.dart';
 
+import '../../../../../data/database/app_database.dart';
+import '../../../../../data/injection/injection.dart';
 import '../../../../commons/extensions/context_extension.dart';
 import '../../../../commons/language/language.dart';
 import '../../../../commons/routes/routes.dart';
 import '../../../../commons/themes/constants.dart';
 import '../../../../commons/themes/text_styel.dart';
+import '../../../../manager/database_helper.dart';
+import '../../../../manager/device_helper.dart';
 
 class DaftarRayonPage extends StatefulWidget {
   const DaftarRayonPage({super.key});
@@ -22,10 +26,11 @@ class DaftarRayonPage extends StatefulWidget {
 
 class _DaftarRayonPageState extends State<DaftarRayonPage>
     with SingleTickerProviderStateMixin {
-  String _searchQuery = '';
+  // String _searchQuery = '';
   late TabController _tabController;
-  late RayonRepository _rayonRepository;
+  // late RayonRepository _rayonRepository;
   List<RayonTableData> _rayonList = [];
+  late final DatabaseHelper _dbHelper;
   bool _isLoading = true;
 
   final TextEditingController _searchController = TextEditingController();
@@ -39,9 +44,11 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
   }
 
   Future<void> _initializeDatabase() async {
-    _rayonRepository = RayonRepository(AppDatabase());
-    await _rayonRepository.initializeData();
-    await _loadRayons();
+    // _rayonRepository = RayonRepository(AppDatabase());
+    // await _rayonRepository.initializeData();
+    // await _loadRayons();
+    _dbHelper = sl<DatabaseHelper>();
+    _loadRayons();
   }
 
   Future<void> _loadRayons() async {
@@ -50,9 +57,14 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
     });
 
     try {
-      final rayons = await _rayonRepository.getAllRayons();
+      // final rayons = await _rayonRepository.getAllRayons();
+      // setState(() {
+      //   _rayonList = rayons;
+      //   _isLoading = false;
+      // });
+      final data = await _dbHelper.getAllRayons();
       setState(() {
-        _rayonList = rayons;
+        _rayonList = data;
         _isLoading = false;
       });
     } catch (e) {
@@ -68,9 +80,13 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
       await _loadRayons();
     } else {
       try {
-        final results = await _rayonRepository.searchRayons(query);
+        // final results = await _rayonRepository.searchRayons(query);
+        // setState(() {
+        //   _rayonList = results;
+        // });
+        final result = await _dbHelper.searchRayons(query);
         setState(() {
-          _rayonList = results;
+          _rayonList = result;
         });
       } catch (e) {
         debugPrint('Error searching rayons: $e');
@@ -86,17 +102,17 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
     super.dispose();
   }
 
-  List<RayonTableData> get _filteredRayonList {
-    if (_searchQuery.isEmpty) {
-      return _rayonList;
-    }
-    return _rayonList.where((rayon) {
-      final id = rayon.id.toLowerCase();
-      final nama = rayon.nama.toLowerCase();
-      final query = _searchQuery.toLowerCase();
-      return id.contains(query) || nama.contains(query);
-    }).toList();
-  }
+  // List<RayonTableData> get _filteredRayonList {
+  //   if (_searchQuery.isEmpty) {
+  //     return _rayonList;
+  //   }
+  //   return _rayonList.where((rayon) {
+  //     final id = rayon.id.toLowerCase();
+  //     final nama = rayon.nama.toLowerCase();
+  //     final query = _searchQuery.toLowerCase();
+  //     return id.contains(query) || nama.contains(query);
+  //   }).toList();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -249,7 +265,8 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
     if (_isLoading) {
       return _buildLoading();
     }
-    return _filteredRayonList.isEmpty ? _buildEmpty() : _buildRayonList();
+    // return _filteredRayonList.isEmpty ? _buildEmpty() : _buildRayonList();
+    return _rayonList.isEmpty ? _buildEmpty() : _buildRayonList();
   }
 
   Widget _buildBaccanSectionNew() {
@@ -325,9 +342,9 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
         autovalidateMode: AutovalidateMode.onUserInteraction,
 
         onChanged: (value) async {
-          setState(() {
-            _searchQuery = value;
-          });
+          // setState(() {
+          //   _searchQuery = value;
+          // });
           await _searchRayons(value);
         },
 
@@ -360,12 +377,13 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
           prefixIcon: Icon(Remix.search_line, size: 24, color: baseBlack),
 
           // ❌ Icon clear kanan
-          suffixIcon: _searchQuery.isNotEmpty
+          // suffixIcon: _searchQuery.isNotEmpty
+          suffixIcon: _searchController.text.isNotEmpty
               ? GestureDetector(
                   onTap: () async {
-                    setState(() {
-                      _searchQuery = '';
-                    });
+                    // setState(() {
+                    //   _searchQuery = '';
+                    // });
                     _searchController.clear();
                     await _loadRayons();
                   },
@@ -448,7 +466,8 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
   }
 
   Widget _buildRayonList() {
-    final rayons = _filteredRayonList;
+    // final rayons = _filteredRayonList;
+    final rayons = _rayonList;
 
     return ListView.separated(
       shrinkWrap: true,
@@ -473,7 +492,11 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
       onTap: () {
         context.pushNamed(
           Routes.listPelangganPage,
-          queryParameters: {'rayonId': rayon.id, 'rayonName': rayon.nama},
+          // queryParameters: {'rayonId': rayon.id, 'rayonName': rayon.nama},
+          queryParameters: {
+            'rayonId': rayon.idRayon.toString(),
+            'rayonName': rayon.namaRayon,
+          },
         );
       },
       child: Container(
@@ -538,7 +561,8 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '${rayon.id} - ${rayon.nama}',
+                        // '${rayon.id} - ${rayon.nama}',
+                        '${rayon.idRayon} - ${rayon.namaRayon}',
                         style: TextStyle(
                           color: text700,
                           fontSize: 16.sp,
@@ -547,7 +571,8 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
                         ),
                       ),
                       Text(
-                        rayon.total.toString(),
+                        // rayon.total.toString(),
+                        rayon.totalList.toString(),
                         style: TextStyle(
                           color: text700,
                           fontSize: 16.sp,
@@ -564,7 +589,8 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Sudah Terbaca: ${rayon.sudahTerbaca}',
+                        // 'Sudah Terbaca: ${rayon.sudahTerbaca}',
+                        'Sudah Terbaca: ${rayon.totalListTerbaca}',
                         style: TextStyle(
                           color: text700,
                           fontSize: 14.sp,
@@ -573,7 +599,8 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
                         ),
                       ),
                       Text(
-                        'Belum Terbaca: ${rayon.belumTerbaca}',
+                        // 'Belum Terbaca: ${rayon.belumTerbaca}',
+                        'Belum Terbaca: ${rayon.totalListBelumTerbaca}',
                         style: TextStyle(
                           color: text700,
                           fontSize: 14.sp,
@@ -643,7 +670,9 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
           ),
           verticalSpace(16.h),
           GestureDetector(
-            onTap: _loadRayons,
+            onTap: () async {
+              await _dbHelper.initDummyData();
+            },
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
               decoration: BoxDecoration(

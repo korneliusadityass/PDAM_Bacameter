@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:baca_meter/core/data/data_sources/remote/auth/auth_remote_data_source.dart';
+import 'package:baca_meter/core/data/database/app_database.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
@@ -12,7 +13,7 @@ import '../../presentation/manager/local_database_service.dart';
 import '../../presentation/page/auth/login/provider/login_notifier.dart';
 import '../../presentation/utilities/internet_connectivity_provider.dart';
 
-import '../database/app_database.dart';
+// import '../database/app_database.dart';
 import '../repositories_impl/auth/auth_repository_impl.dart';
 import '../utilities/network/dio_handler.dart';
 
@@ -38,8 +39,7 @@ class Injection {
     // Usecases
     // await _registerAuthUseCases();
 
-    // Database
-    await _registerDatabase(); // ✅ DB
+    await _registerDatabase();
   }
 
   Future _registerPreferences() async {
@@ -98,13 +98,12 @@ class Injection {
   //   sl.registerLazySingleton(() => FirebaseMessageManager());
   // }
 
+  // Database
   Future _registerDatabase() async {
     sl.registerLazySingleton<AppDatabase>(() => AppDatabase());
 
-    sl.registerLazySingleton<DatabaseHelper>(() => DatabaseHelper(sl()));
-
-    sl.registerLazySingleton<LocalDatabaseService>(
-      () => LocalDatabaseService(sl()),
+    sl.registerLazySingleton<DatabaseHelper>(
+      () => DatabaseHelper(sl<AppDatabase>()),
     );
   }
 }
