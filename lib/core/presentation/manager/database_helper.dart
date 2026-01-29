@@ -1,4 +1,4 @@
-import 'package:baca_meter/core/data/database/app_database.dart';
+import 'package:baca_meter/core/data/database/daftar_rayon/app_database.dart';
 import 'package:drift/drift.dart';
 
 class DatabaseHelper {
@@ -57,7 +57,7 @@ class DatabaseHelper {
         sudahDibaca: const Value(true),
         tanggalBaca: Value(DateTime.now()),
         standMeter: const Value(120),
-        statusTerupload: const Value(false),
+        statusTerupload: const Value(true),
       ),
       PelangganTableCompanion.insert(
         idRayon: 1,

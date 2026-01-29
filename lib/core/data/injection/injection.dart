@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:baca_meter/core/data/data_sources/remote/auth/auth_remote_data_source.dart';
-import 'package:baca_meter/core/data/database/app_database.dart';
+import 'package:baca_meter/core/data/database/daftar_rayon/app_database.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
@@ -9,7 +9,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../domain/repositories/auth/auth_repository.dart';
 import '../../presentation/manager/database_helper.dart';
-import '../../presentation/manager/local_database_service.dart';
 import '../../presentation/page/auth/login/provider/login_notifier.dart';
 import '../../presentation/utilities/internet_connectivity_provider.dart';
 
@@ -39,6 +38,7 @@ class Injection {
     // Usecases
     // await _registerAuthUseCases();
 
+    // Database
     await _registerDatabase();
   }
 

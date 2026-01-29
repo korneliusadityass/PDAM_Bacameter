@@ -1,13 +1,11 @@
-import 'package:baca_meter/core/data/database/database.dart';
 import 'package:baca_meter/core/presentation/commons/methods/methods.dart';
 import 'package:baca_meter/core/presentation/commons/themes/color.dart';
-import 'package:baca_meter/core/presentation/page/home/feature/daftar_rayon/database/repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:remixicon/remixicon.dart';
 
-import '../../../../../data/database/app_database.dart';
+import '../../../../../data/database/daftar_rayon/app_database.dart';
 import '../../../../../data/injection/injection.dart';
 import '../../../../commons/extensions/context_extension.dart';
 import '../../../../commons/language/language.dart';
@@ -15,7 +13,6 @@ import '../../../../commons/routes/routes.dart';
 import '../../../../commons/themes/constants.dart';
 import '../../../../commons/themes/text_styel.dart';
 import '../../../../manager/database_helper.dart';
-import '../../../../manager/device_helper.dart';
 
 class DaftarRayonPage extends StatefulWidget {
   const DaftarRayonPage({super.key});
@@ -26,9 +23,7 @@ class DaftarRayonPage extends StatefulWidget {
 
 class _DaftarRayonPageState extends State<DaftarRayonPage>
     with SingleTickerProviderStateMixin {
-  // String _searchQuery = '';
   late TabController _tabController;
-  // late RayonRepository _rayonRepository;
   List<RayonTableData> _rayonList = [];
   late final DatabaseHelper _dbHelper;
   bool _isLoading = true;
@@ -44,9 +39,6 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
   }
 
   Future<void> _initializeDatabase() async {
-    // _rayonRepository = RayonRepository(AppDatabase());
-    // await _rayonRepository.initializeData();
-    // await _loadRayons();
     _dbHelper = sl<DatabaseHelper>();
     _loadRayons();
   }
@@ -57,11 +49,6 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
     });
 
     try {
-      // final rayons = await _rayonRepository.getAllRayons();
-      // setState(() {
-      //   _rayonList = rayons;
-      //   _isLoading = false;
-      // });
       final data = await _dbHelper.getAllRayons();
       setState(() {
         _rayonList = data;
@@ -80,10 +67,6 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
       await _loadRayons();
     } else {
       try {
-        // final results = await _rayonRepository.searchRayons(query);
-        // setState(() {
-        //   _rayonList = results;
-        // });
         final result = await _dbHelper.searchRayons(query);
         setState(() {
           _rayonList = result;
@@ -101,18 +84,6 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
     _tabController.dispose();
     super.dispose();
   }
-
-  // List<RayonTableData> get _filteredRayonList {
-  //   if (_searchQuery.isEmpty) {
-  //     return _rayonList;
-  //   }
-  //   return _rayonList.where((rayon) {
-  //     final id = rayon.id.toLowerCase();
-  //     final nama = rayon.nama.toLowerCase();
-  //     final query = _searchQuery.toLowerCase();
-  //     return id.contains(query) || nama.contains(query);
-  //   }).toList();
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -140,7 +111,6 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
       right: 16.w,
       child: Column(
         children: [
-          // _buildSearchInput(context)
           _buildBaccanSection(),
         ],
       ),
@@ -265,7 +235,6 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
     if (_isLoading) {
       return _buildLoading();
     }
-    // return _filteredRayonList.isEmpty ? _buildEmpty() : _buildRayonList();
     return _rayonList.isEmpty ? _buildEmpty() : _buildRayonList();
   }
 
@@ -296,7 +265,6 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
             indicatorColor: primary500Base,
             dividerColor: Colors.transparent,
             splashFactory: NoSplash.splashFactory,
-            // padding: EdgeInsets.symmetric(horizontal: defaultMargin),
             splashBorderRadius: BorderRadius.circular(24.r),
             tabs: [
               Tab(text: Language.bacaan),
@@ -332,7 +300,7 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
   Widget _buildBaccanSection() {
     return Material(
       color: Colors.transparent,
-      elevation: 6, // setara blurRadius 4
+      elevation: 6, 
       shadowColor: const Color(0x1E636363),
       borderRadius: BorderRadius.circular(12),
       child: TextFormField(
@@ -418,51 +386,6 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
         ),
       ),
     );
-
-    // Column(
-    //   crossAxisAlignment: CrossAxisAlignment.start,
-    //   children: [
-    //     Container(
-    //       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
-    //       // height: 56.h,
-    //       decoration: ShapeDecoration(
-    //         color: primary700,
-    //         // borderRadius: BorderRadius.circular(28.r),
-    //         shape: RoundedRectangleBorder(
-    //           borderRadius: BorderRadius.circular(40),
-    //         ),
-    //         shadows: [
-    //           BoxShadow(
-    //             color: Color(0x28000000),
-    //             blurRadius: 4,
-    //             offset: Offset(0, 1),
-    //             spreadRadius: 0,
-    //           ),
-    //         ],
-    //       ),
-    //       child: TabBar(
-    //         controller: _tabController,
-    //         dividerColor: Colors.transparent,
-    //         indicator: BoxDecoration(
-    //           color: baseWhite,
-    //           borderRadius: BorderRadius.circular(28.r),
-    //         ),
-    //         indicatorSize: TabBarIndicatorSize.tab,
-    //         labelColor: primary500Base,
-    //         unselectedLabelColor: baseWhite,
-    //         labelStyle: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600),
-    //         unselectedLabelStyle: TextStyle(
-    //           fontSize: 12.sp,
-    //           fontWeight: FontWeight.normal,
-    //         ),
-    //         tabs: [
-    //           Tab(text: 'Bacaan'),
-    //           Tab(text: 'Bacaan Ulang'),
-    //         ],
-    //       ),
-    //     ),
-    //   ],
-    // );
   }
 
   Widget _buildRayonList() {
@@ -561,7 +484,6 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        // '${rayon.id} - ${rayon.nama}',
                         '${rayon.idRayon} - ${rayon.namaRayon}',
                         style: TextStyle(
                           color: text700,
@@ -571,7 +493,6 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
                         ),
                       ),
                       Text(
-                        // rayon.total.toString(),
                         rayon.totalList.toString(),
                         style: TextStyle(
                           color: text700,
@@ -589,7 +510,6 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        // 'Sudah Terbaca: ${rayon.sudahTerbaca}',
                         'Sudah Terbaca: ${rayon.totalListTerbaca}',
                         style: TextStyle(
                           color: text700,
@@ -599,7 +519,6 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
                         ),
                       ),
                       Text(
-                        // 'Belum Terbaca: ${rayon.belumTerbaca}',
                         'Belum Terbaca: ${rayon.totalListBelumTerbaca}',
                         style: TextStyle(
                           color: text700,
@@ -642,30 +561,32 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
           verticalSpace(16.h),
           Image.asset(
             'assets/images/img_empty_fix.png',
-            width: 200.w,
-            height: 200.h,
+            width: 178.w,
+            height: 180.h,
             fit: BoxFit.contain,
           ),
           verticalSpace(16.h),
           Text(
-            'Data Belum Tersedia',
+            Language.dataBelumTersedia,
             style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
-              color: text600,
+              color: text700,
+              fontSize: 16.sp,
               fontFamily: 'Inter',
+              fontWeight: semiBold,
             ),
 
             textAlign: TextAlign.center,
           ),
           verticalSpace(8.h),
           Text(
-            'Silahkan lakukan download master terlebih dahulu',
+            Language.silahkanPilihPDAMTempatAndaBerkerjaTerlebihDahulu,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 14.sp,
-              color: text400,
+              color: const Color(0xFF131313),
+              fontSize: 14,
               fontFamily: 'Inter',
+              fontWeight: FontWeight.w400,
+              height: 1.43,
             ),
           ),
           verticalSpace(16.h),
@@ -674,21 +595,24 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
               await _dbHelper.initDummyData();
             },
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-              decoration: BoxDecoration(
-                color: primary500Base.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20.r),
-                border: Border.all(color: primary500Base),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              decoration: ShapeDecoration(
+                color: const Color(
+                  0xFFF0F3FF,
+                ) ,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: Text(
-                'Download Master Sekarang',
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                  color: primary500Base,
-                  fontFamily: 'Inter',
-                ),
+                Language.downloadMasterSekarang,
                 textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: primary500Base,
+                  fontSize: 14.sp,
+                  fontFamily: 'Inter',
+                  fontWeight: semiBold,
+                ),
               ),
             ),
           ),

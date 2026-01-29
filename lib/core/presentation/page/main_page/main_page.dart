@@ -24,12 +24,7 @@ class _MainPageState extends State<MainPage> {
   final PageController _pageController = PageController();
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = [
-    HomePage(),
-    ManagementDataPage(),
-    ProfilePage(),
-    // Tambahkan halaman lain jika perlu
-  ];
+  final List<Widget> _pages = [HomePage(), ManagementDataPage(), ProfilePage()];
 
   @override
   void dispose() {
@@ -101,11 +96,7 @@ class _MainPageState extends State<MainPage> {
               setState(() {
                 _selectedIndex = index;
               });
-              _pageController.animateToPage(
-                index,
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeInOut,
-              );
+              _pageController.jumpToPage(index);
             },
             child: Column(
               mainAxisSize: MainAxisSize.min,

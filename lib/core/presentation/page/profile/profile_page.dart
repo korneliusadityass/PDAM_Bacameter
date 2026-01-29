@@ -11,9 +11,15 @@ import '../../commons/routes/routes.dart';
 import '../../commons/themes/text_styel.dart';
 import '../../manager/shared_preferences_helper.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage>
+    with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,7 +28,7 @@ class ProfilePage extends StatelessWidget {
         children: [
           // Background Biru
           _buildBackground(context),
-      
+
           // content
           Positioned(
             top: context.height * 0.2 - 24, // 🔑 naik 24px
@@ -30,11 +36,10 @@ class ProfilePage extends StatelessWidget {
             right: 0,
             child: _buildContent(context),
           ),
-      
+
           // 🔥 RR BOX
           Positioned(
-            top:
-                context.height * 0.2 - 24 - 35, // 🔑 naik setengah tinggi box
+            top: context.height * 0.2 - 24 - 35, // 🔑 naik setengah tinggi box
             left: 16.w,
             child: Container(
               width: 80,
@@ -60,12 +65,12 @@ class ProfilePage extends StatelessWidget {
               ),
             ),
           ),
-      
+
           // Powered By MKP
           Positioned(
             left: 0,
             right: 0,
-            bottom: 16.h, 
+            bottom: 16.h,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -261,4 +266,7 @@ class ProfilePage extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

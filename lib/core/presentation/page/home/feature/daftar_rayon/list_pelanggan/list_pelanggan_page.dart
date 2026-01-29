@@ -1,13 +1,11 @@
-import 'package:baca_meter/core/data/database/database.dart';
 import 'package:baca_meter/core/presentation/commons/methods/methods.dart';
 import 'package:baca_meter/core/presentation/commons/themes/color.dart';
-import 'package:baca_meter/core/presentation/page/home/feature/daftar_rayon/database/repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:remixicon/remixicon.dart';
 
-import '../../../../../../data/database/app_database.dart';
+import '../../../../../../data/database/daftar_rayon/app_database.dart';
 import '../../../../../../data/injection/injection.dart';
 import '../../../../../commons/extensions/context_extension.dart';
 import '../../../../../commons/language/language.dart';
@@ -86,6 +84,7 @@ class _ListPelangganPageState extends State<ListPelangganPage> {
     if (query.isEmpty) {
       await _loadPelanggan();
     } else {
+      debugPrint('query $query');
       // Untuk search yang lebih kompleks, bisa ditambahkan method search di repository
       // final allPelanggans = await _rayonRepository.getPelangganByRayon(
       //   widget.rayonId,
@@ -93,6 +92,7 @@ class _ListPelangganPageState extends State<ListPelangganPage> {
       final pelanggans = await _dbHelper.getPelangganByRayon(
         int.parse(widget.rayonId),
       );
+      debugPrint('pelanggans $pelanggans');
       setState(() {
         // _pelangganList = allPelanggans.where((pelanggan) {
         _pelangganList = pelanggans.where((pelanggan) {
@@ -126,7 +126,7 @@ class _ListPelangganPageState extends State<ListPelangganPage> {
 
   // Helper method untuk menentukan apakah sudah diupload
   bool _isUploaded(PelangganTableData pelanggan) {
-    return pelanggan.sudahDibaca && pelanggan.statusTerupload == 'SUDAH';
+    return pelanggan.sudahDibaca && pelanggan.statusTerupload;
   }
 
   @override

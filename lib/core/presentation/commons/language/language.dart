@@ -58,4 +58,7 @@ class Language {
   static String uploaded = 'Uploaded';
   static String detailPelanggan = 'Detail Pelanggan';
   static String detailBacameter = 'Detail Bacameter';
+  static String dataBelumTersedia = 'Data Belum Tersedia';
+  static String downloadMasterSekarang = 'Download Master Sekarang';
+  
 }

@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'rayon_table.dart';
+import '../Rayon/rayon_table.dart';
 
 class PelangganTable extends Table {
   IntColumn get id => integer().autoIncrement()();

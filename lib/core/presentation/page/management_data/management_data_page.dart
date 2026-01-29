@@ -10,9 +10,15 @@ import 'package:remixicon/remixicon.dart';
 import '../../commons/extensions/context_extension.dart';
 import '../../commons/themes/text_styel.dart';
 
-class ManagementDataPage extends StatelessWidget {
+class ManagementDataPage extends StatefulWidget {
   const ManagementDataPage({super.key});
 
+  @override
+  State<ManagementDataPage> createState() => _ManagementDataPageState();
+}
+
+class _ManagementDataPageState extends State<ManagementDataPage>
+    with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     final width = context.width;
@@ -39,20 +45,19 @@ class ManagementDataPage extends StatelessWidget {
             height: height * 0.2,
             clipBehavior: Clip.hardEdge,
             decoration: BoxDecoration(color: primary500Base),
-            child:
-                Stack(
-                  children: [
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: Image.asset(
-                        'assets/icon/home/ic_appbar.png',
-                        width: width * 0.5,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ],
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Image.asset(
+                    'assets/icon/home/ic_appbar.png',
+                    width: width * 0.5,
+                    fit: BoxFit.contain,
+                  ),
                 ),
+              ],
+            ),
           ),
         ),
       ],
@@ -156,7 +161,6 @@ class ManagementDataPage extends StatelessWidget {
             ),
           ),
         ),
-      
       ],
     );
   }
@@ -449,4 +453,7 @@ class ManagementDataPage extends StatelessWidget {
       timer?.cancel();
     });
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
