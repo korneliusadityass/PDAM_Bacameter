@@ -2,10 +2,12 @@ import 'package:baca_meter/core/presentation/commons/methods/methods.dart';
 import 'package:baca_meter/core/presentation/commons/themes/color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:remixicon/remixicon.dart';
 
 import '../../../../../data/database/daftar_rayon/app_database.dart';
+import '../../../../../data/enum/database/database_status.dart';
 import '../../../../../data/injection/injection.dart';
 import '../../../../commons/extensions/context_extension.dart';
 import '../../../../commons/language/language.dart';
@@ -13,6 +15,7 @@ import '../../../../commons/routes/routes.dart';
 import '../../../../commons/themes/constants.dart';
 import '../../../../commons/themes/text_styel.dart';
 import '../../../../manager/database_helper.dart';
+import '../../../../widget/button/normal_button.dart';
 
 class DaftarRayonPage extends StatefulWidget {
   const DaftarRayonPage({super.key});
@@ -26,7 +29,9 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
   late TabController _tabController;
   List<RayonTableData> _rayonList = [];
   late final DatabaseHelper _dbHelper;
-  bool _isLoading = true;
+  bool _emptySearch = false;
+  PageStatus? _status;
+  String? _errorMessage;
 
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
@@ -35,46 +40,66 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+
     _initializeDatabase();
   }
 
   Future<void> _initializeDatabase() async {
+    _emptySearch = false;
     _dbHelper = sl<DatabaseHelper>();
-    _loadRayons();
+    await _loadRayons();
   }
 
   Future<void> _loadRayons() async {
     setState(() {
-      _isLoading = true;
+      _status = PageStatus.loading;
     });
 
-    try {
-      final data = await _dbHelper.getAllRayons();
-      setState(() {
-        _rayonList = data;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      debugPrint('Error loading rayons: $e');
-    }
+    final result = await _dbHelper.getAllRayons();
+    result.fold(
+      (failure) {
+        setState(() {
+          _status = PageStatus.error;
+          _errorMessage = failure.message;
+        });
+      },
+      (data) {
+        setState(() {
+          _rayonList = data;
+          _emptySearch = false;
+          _status = PageStatus.loaded;
+        });
+      },
+    );
   }
 
   Future<void> _searchRayons(String query) async {
     if (query.isEmpty) {
       await _loadRayons();
-    } else {
-      try {
-        final result = await _dbHelper.searchRayons(query);
-        setState(() {
-          _rayonList = result;
-        });
-      } catch (e) {
-        debugPrint('Error searching rayons: $e');
-      }
+      return;
     }
+
+    setState(() {
+      _status = PageStatus.loading;
+    });
+
+    final result = await _dbHelper.searchRayons(query);
+
+    result.fold(
+      (failure) {
+        setState(() {
+          _status = PageStatus.error;
+          _errorMessage = failure.message;
+        });
+      },
+      (data) {
+        setState(() {
+          _rayonList = data;
+          _emptySearch = data.isEmpty ? true : false;
+          _status = PageStatus.loaded;
+        });
+      },
+    );
   }
 
   @override
@@ -109,11 +134,7 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
       bottom: 16.h,
       left: 16.w,
       right: 16.w,
-      child: Column(
-        children: [
-          _buildBaccanSection(),
-        ],
-      ),
+      child: Column(children: [_buildBaccanSection()]),
     );
   }
 
@@ -173,18 +194,13 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
           ),
         ),
         Expanded(
-          flex: 7, // tinggi relatif (background)
+          flex: 7,
           child: Container(
             width: double.infinity,
-            padding: EdgeInsets.only(
-              // top: 24.h,
-              left: 16.w,
-              right: 16.w,
-              bottom: 16.h,
-            ),
+            padding: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 16.h),
             clipBehavior: Clip.antiAlias,
             decoration: ShapeDecoration(
-              color: Colors.white /* Color-Base-color-Background-Bg-white */,
+              color: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(24),
@@ -232,10 +248,21 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
   }
 
   Widget _buildRayonContent() {
-    if (_isLoading) {
-      return _buildLoading();
+    switch (_status) {
+      case PageStatus.loading:
+        return _buildLoading();
+
+      case PageStatus.error:
+        return _buildError(
+          _errorMessage ?? 'Terjadi kesalahan saat memuat data',
+        );
+
+      case PageStatus.loaded:
+        return _rayonList.isEmpty ? _buildEmpty() : _buildRayonList();
+
+      default:
+        return _buildLoading();
     }
-    return _rayonList.isEmpty ? _buildEmpty() : _buildRayonList();
   }
 
   Widget _buildBaccanSectionNew() {
@@ -271,12 +298,10 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
               Tab(text: Language.bacaanUlang),
             ],
             indicator: BoxDecoration(
-              // color: primary500Base,
               color: Colors.white,
               borderRadius: BorderRadius.circular(24.r),
             ),
             labelColor: primary500Base,
-            // labelColor: neutralColor1,
             unselectedLabelStyle: TextStyle(
               color: const Color(0xFFD5DAF9),
               fontSize: 14.sp,
@@ -300,7 +325,7 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
   Widget _buildBaccanSection() {
     return Material(
       color: Colors.transparent,
-      elevation: 6, 
+      elevation: 6,
       shadowColor: const Color(0x1E636363),
       borderRadius: BorderRadius.circular(12),
       child: TextFormField(
@@ -310,9 +335,6 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
         autovalidateMode: AutovalidateMode.onUserInteraction,
 
         onChanged: (value) async {
-          // setState(() {
-          //   _searchQuery = value;
-          // });
           await _searchRayons(value);
         },
 
@@ -345,13 +367,9 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
           prefixIcon: Icon(Remix.search_line, size: 24, color: baseBlack),
 
           // ❌ Icon clear kanan
-          // suffixIcon: _searchQuery.isNotEmpty
           suffixIcon: _searchController.text.isNotEmpty
               ? GestureDetector(
                   onTap: () async {
-                    // setState(() {
-                    //   _searchQuery = '';
-                    // });
                     _searchController.clear();
                     await _loadRayons();
                   },
@@ -389,13 +407,11 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
   }
 
   Widget _buildRayonList() {
-    // final rayons = _filteredRayonList;
     final rayons = _rayonList;
 
     return ListView.separated(
       shrinkWrap: true,
       physics: const AlwaysScrollableScrollPhysics(),
-      // padding: EdgeInsets.only(bottom: 80.h),
       itemCount: rayons.length,
       separatorBuilder: (_, __) => verticalSpace(12.h),
       itemBuilder: (context, index) {
@@ -415,7 +431,6 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
       onTap: () {
         context.pushNamed(
           Routes.listPelangganPage,
-          // queryParameters: {'rayonId': rayon.id, 'rayonName': rayon.nama},
           queryParameters: {
             'rayonId': rayon.idRayon.toString(),
             'rayonName': rayon.namaRayon,
@@ -426,14 +441,9 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
         width: double.infinity,
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
         decoration: ShapeDecoration(
-          color: Colors.white /* Color-Base-color-Background-Bg-white */,
+          color: Colors.white,
           shape: RoundedRectangleBorder(
-            side: BorderSide(
-              width: 1,
-              color: const Color(
-                0xFFDBDBDB,
-              ) /* Color-Base-color-Border-border-dark */,
-            ),
+            side: BorderSide(width: 1, color: const Color(0xFFDBDBDB)),
             borderRadius: BorderRadius.circular(12),
           ),
         ),
@@ -554,6 +564,29 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
     );
   }
 
+  Widget _buildError(String? message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Feather.alert_triangle, size: 48.sp, color: error600),
+          verticalSpace(8.h),
+          Text(
+            'Terjadi kesalahan',
+            style: blackTextStyle.copyWith(color: error600, fontSize: 13.sp),
+            textAlign: TextAlign.center,
+          ),
+          verticalSpace(8.h),
+          NormalButton(
+            width: 180.w,
+            title: 'Coba Lagi',
+            onPressed: () => _loadRayons(),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildEmpty() {
     return Center(
       child: ListView(
@@ -579,7 +612,7 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
           ),
           verticalSpace(8.h),
           Text(
-            Language.silahkanPilihPDAMTempatAndaBerkerjaTerlebihDahulu,
+            Language.silahkanDownloadMaster,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: const Color(0xFF131313),
@@ -589,36 +622,58 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
               height: 1.43,
             ),
           ),
-          verticalSpace(16.h),
-          GestureDetector(
-            onTap: () async {
-              await _dbHelper.initDummyData();
-            },
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-              decoration: ShapeDecoration(
-                color: const Color(
-                  0xFFF0F3FF,
-                ) ,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+          if (!_emptySearch) ...[
+            verticalSpace(16.h),
+            GestureDetector(
+              onTap: () async {
+                // await _dbHelper.initDummyData();
+                await initDummy();
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                decoration: ShapeDecoration(
+                  color: const Color(0xFFF0F3FF),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-              ),
-              child: Text(
-                Language.downloadMasterSekarang,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: primary500Base,
-                  fontSize: 14.sp,
-                  fontFamily: 'Inter',
-                  fontWeight: semiBold,
+                child: Text(
+                  Language.downloadMasterSekarang,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: primary500Base,
+                    fontSize: 14.sp,
+                    fontFamily: 'Inter',
+                    fontWeight: semiBold,
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
+
           verticalSpace(300.h),
         ],
       ),
+    );
+  }
+
+  Future<void> initDummy() async {
+    setState(() {
+      _status = PageStatus.loading;
+    });
+
+    final result = await _dbHelper.initDummyData();
+
+    result.fold(
+      (failure) {
+        setState(() {
+          _status = PageStatus.error;
+          _errorMessage = failure.message;
+        });
+      },
+      (_) async {
+        await _loadRayons();
+      },
     );
   }
 }

@@ -1,5 +1,8 @@
 import 'package:baca_meter/core/data/database/daftar_rayon/app_database.dart';
+import 'package:dartz/dartz.dart';
 import 'package:drift/drift.dart';
+
+import '../../data/utilities/failure/failure.dart';
 
 class DatabaseHelper {
   final AppDatabase db;
@@ -9,14 +12,22 @@ class DatabaseHelper {
   /// ======================
   /// INIT DUMMY DATA
   /// ======================
-  Future<void> initDummyData() async {
-    final exist = await db.select(db.rayonTable).get();
-    if (exist.isNotEmpty) return;
+  Future<Either<Failure, Unit>> initDummyData() async {
+    try {
+      final exist = await db.select(db.rayonTable).get();
+      if (exist.isNotEmpty) {
+        return right(unit);
+      }
 
-    await db.transaction(() async {
-      await _insertDummyRayon();
-      await _insertDummyPelanggan();
-    });
+      await db.transaction(() async {
+        await _insertDummyRayon();
+        await _insertDummyPelanggan();
+      });
+
+      return right(unit);
+    } catch (e) {
+      return Left(ServerFailure('Gagal inisialisasi data'));
+    }
   }
 
   /// ======================
@@ -32,9 +43,9 @@ class DatabaseHelper {
       ),
       RayonTableCompanion.insert(
         namaRayon: 'Rayon B',
-        totalList:  const Value(2),
-        totalListTerbaca:  const Value(0),
-        totalListBelumTerbaca:  const Value(2),
+        totalList: const Value(2),
+        totalListTerbaca: const Value(0),
+        totalListBelumTerbaca: const Value(2),
       ),
     ];
 
@@ -109,21 +120,42 @@ class DatabaseHelper {
   }
 
   // ===== RAYON =====
-  Future<List<RayonTableData>> getAllRayons() {
-    return db.select(db.rayonTable).get();
+  Future<Either<Failure, List<RayonTableData>>> getAllRayons() async {
+    try {
+      final data = await db.select(db.rayonTable).get();
+      return right(data);
+    } catch (e) {
+      return left(ServerFailure('Gagal memuat data rayon'));
+    }
   }
 
-  Future<List<RayonTableData>> searchRayons(String keyword) {
-    return (db.select(
-      db.rayonTable,
-    )..where((r) => r.namaRayon.like('%$keyword%'))).get();
+  Future<Either<Failure, List<RayonTableData>>> searchRayons(
+    String keyword,
+  ) async {
+    try {
+      final result = await (db.select(
+        db.rayonTable,
+      )..where((r) => r.namaRayon.like('%$keyword%'))).get();
+
+      return right(result);
+    } catch (e) {
+      return left(ServerFailure('Gagal mencari rayon'));
+    }
   }
 
   // ===== PELANGGAN =====
-  Future<List<PelangganTableData>> getPelangganByRayon(int idRayon) {
-    return (db.select(
-      db.pelangganTable,
-    )..where((p) => p.idRayon.equals(idRayon))).get();
+  Future<Either<Failure, List<PelangganTableData>>> getPelangganByRayon(
+    int idRayon,
+  ) async {
+    try {
+      final result = await (db.select(
+        db.pelangganTable,
+      )..where((p) => p.idRayon.equals(idRayon))).get();
+
+      return right(result);
+    } catch (e) {
+      return left(ServerFailure('Gagal memuat data pelanggan'));
+    }
   }
 
   Future<void> updateStatusBaca({

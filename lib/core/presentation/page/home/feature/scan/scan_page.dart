@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:baca_meter/core/presentation/commons/methods/methods.dart';
 import 'package:baca_meter/core/presentation/commons/themes/color.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:go_router/go_router.dart';
@@ -39,16 +40,8 @@ class _ScanPageState extends State<ScanPage>
   @override
   void initState() {
     super.initState();
-    // WidgetsBinding.instance.addObserver(this);
-    // // SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-
-    // controller = initController();
-    // unawaited(controller!.start());
-    // lastScannedCode = null;
-    // lastScanTime = null;
-
-    // _fetchInitialData();
     WidgetsBinding.instance.addObserver(this);
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
     controller = initController();
     unawaited(controller!.start());

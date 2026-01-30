@@ -2,16 +2,19 @@ import 'package:baca_meter/core/presentation/commons/methods/methods.dart';
 import 'package:baca_meter/core/presentation/commons/themes/color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:remixicon/remixicon.dart';
 
 import '../../../../../../data/database/daftar_rayon/app_database.dart';
+import '../../../../../../data/enum/database/database_status.dart';
 import '../../../../../../data/injection/injection.dart';
 import '../../../../../commons/extensions/context_extension.dart';
 import '../../../../../commons/language/language.dart';
 import '../../../../../commons/themes/constants.dart';
 import '../../../../../commons/themes/text_styel.dart';
 import '../../../../../manager/database_helper.dart';
+import '../../../../../widget/button/normal_button.dart';
 
 class ListPelangganPage extends StatefulWidget {
   final String rayonId;
@@ -28,11 +31,12 @@ class ListPelangganPage extends StatefulWidget {
 }
 
 class _ListPelangganPageState extends State<ListPelangganPage> {
-  String _searchQuery = '';
-  // late RayonRepository _rayonRepository;
   List<PelangganTableData> _pelangganList = [];
   late final DatabaseHelper _dbHelper;
-  bool _isLoading = true;
+  // bool _isLoading = true;
+  PageStatus? _status;
+  String? _errorMessage;
+  // bool _emptySearch = false;
 
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
@@ -40,9 +44,13 @@ class _ListPelangganPageState extends State<ListPelangganPage> {
   @override
   void initState() {
     super.initState();
-    // _initializeRepository();
+    // _emptySearch = false;
+    _initializeDatabase();
+  }
+
+  Future<void> _initializeDatabase() async {
     _dbHelper = sl<DatabaseHelper>();
-    _loadPelanggan();
+    await _loadPelanggan();
   }
 
   @override
@@ -52,81 +60,71 @@ class _ListPelangganPageState extends State<ListPelangganPage> {
     super.dispose();
   }
 
-  // void _initializeRepository() {
-  //   _rayonRepository = RayonRepository(AppDatabase());
-  // }
-
   Future<void> _loadPelanggan() async {
     setState(() {
-      _isLoading = true;
+      _status = PageStatus.loading;
     });
 
-    try {
-      // final pelanggans = await _rayonRepository.getPelangganByRayon(
-      //   widget.rayonId,
-      // );
-      final pelanggans = await _dbHelper.getPelangganByRayon(
-        int.parse(widget.rayonId),
-      );
-      setState(() {
-        _pelangganList = pelanggans;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      debugPrint('Error loading pelanggan: $e');
-    }
+    final result = await _dbHelper.getPelangganByRayon(
+      int.parse(widget.rayonId),
+    );
+
+    result.fold(
+      (failure) {
+        setState(() {
+          _status = PageStatus.error;
+          _errorMessage = failure.message;
+        });
+      },
+      (data) {
+        setState(() {
+          _pelangganList = data;
+          // _emptySearch = false;
+          _status = PageStatus.loaded;
+        });
+      },
+    );
   }
 
   Future<void> _searchPelanggan(String query) async {
     if (query.isEmpty) {
       await _loadPelanggan();
-    } else {
-      debugPrint('query $query');
-      // Untuk search yang lebih kompleks, bisa ditambahkan method search di repository
-      // final allPelanggans = await _rayonRepository.getPelangganByRayon(
-      //   widget.rayonId,
-      // );
-      final pelanggans = await _dbHelper.getPelangganByRayon(
-        int.parse(widget.rayonId),
-      );
-      debugPrint('pelanggans $pelanggans');
-      setState(() {
-        // _pelangganList = allPelanggans.where((pelanggan) {
-        _pelangganList = pelanggans.where((pelanggan) {
-          // final id = pelanggan.id.toLowerCase();
-          final id = pelanggan.id;
-          final nama = pelanggan.nama.toLowerCase();
-          final queryLower = query.toLowerCase();
-          // return id.contains(queryLower) || nama.contains(queryLower);
-          return id == int.parse(queryLower) || nama.contains(queryLower);
-        }).toList();
-      });
+      return;
     }
-  }
 
-  // List<PelangganTableData> get _filteredPelangganList {
-  //   if (_searchQuery.isEmpty) {
-  //     return _pelangganList;
-  //   }
-  //   return _pelangganList.where((pelanggan) {
-  //     final id = pelanggan.id.toLowerCase();
-  //     final nama = pelanggan.nama.toLowerCase();
-  //     final query = _searchQuery.toLowerCase();
-  //     return id.contains(query) || nama.contains(query);
-  //   }).toList();
-  // }
+    setState(() {
+      _status = PageStatus.loading;
+    });
 
-  // Helper method untuk menentukan status
-  String _getStatus(PelangganTableData pelanggan) {
-    return pelanggan.sudahDibaca ? 'Terbaca' : 'Belum Terbaca';
-  }
+    final result = await _dbHelper.getPelangganByRayon(
+      int.parse(widget.rayonId),
+    );
 
-  // Helper method untuk menentukan apakah sudah diupload
-  bool _isUploaded(PelangganTableData pelanggan) {
-    return pelanggan.sudahDibaca && pelanggan.statusTerupload;
+    result.fold(
+      (failure) {
+        setState(() {
+          _status = PageStatus.error;
+          _errorMessage = failure.message;
+        });
+      },
+      (pelanggans) {
+        final queryLower = query.toLowerCase();
+        final queryAsInt = int.tryParse(query);
+
+        final filtered = pelanggans.where((pelanggan) {
+          final matchNama = pelanggan.nama.toLowerCase().contains(queryLower);
+          final matchId = queryAsInt != null && pelanggan.id == queryAsInt;
+
+          return matchNama || matchId;
+        }).toList();
+
+        setState(() {
+          // _emptySearch = filtered.isEmpty ? true : false;
+          _pelangganList = filtered;
+          _status = PageStatus.loaded;
+        });
+      },
+    );
   }
 
   @override
@@ -159,8 +157,7 @@ class _ListPelangganPageState extends State<ListPelangganPage> {
           width: double.infinity,
           height: !isKeyboardOpen
               ? MediaQuery.of(context).size.height * 0.35
-              : MediaQuery.of(context).size.height *
-                    0.2, // tinggi relatif (background)
+              : MediaQuery.of(context).size.height * 0.2,
           child: Padding(
             padding: EdgeInsets.only(
               left: defaultMargin.w,
@@ -222,7 +219,7 @@ class _ListPelangganPageState extends State<ListPelangganPage> {
             ),
             clipBehavior: Clip.antiAlias,
             decoration: ShapeDecoration(
-              color: Colors.white /* Color-Base-color-Background-Bg-white */,
+              color: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(24),
@@ -322,9 +319,7 @@ class _ListPelangganPageState extends State<ListPelangganPage> {
                           height: 32.h,
                           padding: const EdgeInsets.all(4),
                           decoration: ShapeDecoration(
-                            color: const Color(
-                              0xFF30B537,
-                            ) /* Color-System-color-Success-success-5 */,
+                            color: const Color(0xFF30B537),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -334,8 +329,7 @@ class _ListPelangganPageState extends State<ListPelangganPage> {
                               totalTerbaca.toString(),
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: Colors
-                                    .white /* Color-Base-color-Text-Text-1 */,
+                                color: Colors.white,
                                 fontSize: 14.sp,
                                 fontFamily: 'Inter',
                                 fontWeight: semiBold,
@@ -365,9 +359,7 @@ class _ListPelangganPageState extends State<ListPelangganPage> {
                           height: 32.h,
                           padding: const EdgeInsets.all(4),
                           decoration: ShapeDecoration(
-                            color: const Color(
-                              0xFFFF5C49,
-                            ) /* Color-System-color-Error-error-5 */,
+                            color: const Color(0xFFFF5C49),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -389,8 +381,7 @@ class _ListPelangganPageState extends State<ListPelangganPage> {
                         Text(
                           'Belum Terbaca',
                           style: TextStyle(
-                            color:
-                                Colors.white /* Color-Base-color-Text-Text-1 */,
+                            color: Colors.white,
                             fontSize: 14.sp,
                             fontFamily: 'Inter',
                             fontWeight: semiBold,
@@ -409,52 +400,90 @@ class _ListPelangganPageState extends State<ListPelangganPage> {
   }
 
   Widget _buildListPelanggan() {
-    // final pelanggans = _filteredPelangganList;
-    final pelanggans = _pelangganList;
-    if (_isLoading) {
-      return _buildLoading();
-    } else if (pelanggans.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Remix.search_line, size: 48, color: text400),
-            verticalSpace(16.h),
-            Text(
-              'Tidak ada pelanggan yang ditemukan',
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: text400,
-                fontFamily: 'Inter',
-                fontWeight: medium,
-              ),
-            ),
-          ],
-        ),
-      );
-    } else {
-      return ListView.separated(
-        shrinkWrap: true,
-        physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: pelanggans.length,
+    switch (_status) {
+      case PageStatus.loading:
+        return _buildLoading();
 
-        separatorBuilder: (_, __) => verticalSpace(12.h),
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: EdgeInsets.only(
-              bottom: index == pelanggans.length - 1 ? 300.h : 0.h,
-              top: index == 0 ? 12.h : 0.h,
-            ),
-            child: _buildListItemPelanggan(pelanggans[index]),
-          );
-        },
-      );
+      case PageStatus.error:
+        return _buildError(
+          _errorMessage ?? 'Terjadi kesalahan saat memuat data',
+        );
+
+      case PageStatus.loaded:
+        return _pelangganList.isEmpty ? _buildEmpty() : _buildPelangganList();
+
+      default:
+        return _buildLoading();
     }
   }
 
+  Widget _buildError(String? message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Feather.alert_triangle, size: 48.sp, color: error600),
+          verticalSpace(8.h),
+          Text(
+            'Terjadi kesalahan',
+            style: blackTextStyle.copyWith(color: error600, fontSize: 13.sp),
+            textAlign: TextAlign.center,
+          ),
+          verticalSpace(8.h),
+          NormalButton(
+            width: 180.w,
+            title: 'Coba Lagi',
+            onPressed: () => _loadPelanggan(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmpty() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Remix.search_line, size: 48, color: text400),
+          verticalSpace(16.h),
+          Text(
+            'Tidak ada pelanggan yang ditemukan',
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: text400,
+              fontFamily: 'Inter',
+              fontWeight: medium,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPelangganList() {
+    final pelanggans = _pelangganList;
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const AlwaysScrollableScrollPhysics(),
+      itemCount: pelanggans.length,
+
+      separatorBuilder: (_, __) => verticalSpace(12.h),
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: index == pelanggans.length - 1 ? 300.h : 0.h,
+            top: index == 0 ? 12.h : 0.h,
+          ),
+          child: _buildListItemPelanggan(pelanggans[index]),
+        );
+      },
+    );
+  }
+
   Widget _buildListItemPelanggan(PelangganTableData pelanggan) {
-    final status = _getStatus(pelanggan);
-    final isUploaded = _isUploaded(pelanggan);
+    final status = pelanggan.sudahDibaca ? 'Terbaca' : 'Belum Terbaca';
+    final isUploaded = pelanggan.sudahDibaca && pelanggan.statusTerupload;
 
     return Column(
       children: [
@@ -462,14 +491,9 @@ class _ListPelangganPageState extends State<ListPelangganPage> {
           width: double.infinity,
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
           decoration: ShapeDecoration(
-            color: Colors.white /* Color-Base-color-Background-Bg-white */,
+            color: Colors.white,
             shape: RoundedRectangleBorder(
-              side: BorderSide(
-                width: 1,
-                color: const Color(
-                  0xFFE6E6E6,
-                ) /* Color-Base-color-Border-border-default */,
-              ),
+              side: BorderSide(width: 1, color: const Color(0xFFE6E6E6)),
               borderRadius: BorderRadius.circular(12),
             ),
           ),
@@ -484,9 +508,7 @@ class _ListPelangganPageState extends State<ListPelangganPage> {
                     padding: const EdgeInsets.all(6),
                     clipBehavior: Clip.antiAlias,
                     decoration: ShapeDecoration(
-                      color: const Color(
-                        0xFFF0F3FF,
-                      ) /* Color-Base-color-Background-Bg-sections */,
+                      color: const Color(0xFFF0F3FF),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(40),
                       ),
@@ -651,7 +673,7 @@ class _ListPelangganPageState extends State<ListPelangganPage> {
   Widget _buildSearchInputNew() {
     return Material(
       color: Colors.transparent,
-      elevation: 6, // setara blurRadius 4
+      elevation: 6,
       shadowColor: const Color(0x1E636363),
       borderRadius: BorderRadius.circular(12),
       child: TextFormField(
@@ -693,12 +715,10 @@ class _ListPelangganPageState extends State<ListPelangganPage> {
           prefixIcon: Icon(Remix.search_line, size: 24, color: baseBlack),
 
           // ❌ Icon clear kanan
-          suffixIcon: _searchQuery.isNotEmpty
+          suffixIcon: _searchController.text.isNotEmpty
               ? GestureDetector(
                   onTap: () async {
-                    setState(() {
-                      _searchQuery = '';
-                    });
+                    _searchController.clear();
                     await _loadPelanggan();
                   },
                   child: Icon(Remix.close_line, size: 24, color: baseBlack),

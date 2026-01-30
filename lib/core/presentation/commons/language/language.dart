@@ -60,5 +60,7 @@ class Language {
   static String detailBacameter = 'Detail Bacameter';
   static String dataBelumTersedia = 'Data Belum Tersedia';
   static String downloadMasterSekarang = 'Download Master Sekarang';
+  static String silahkanDownloadMaster = 'Silahkan lakukan download master terlebih dahulu';
+
   
 }
