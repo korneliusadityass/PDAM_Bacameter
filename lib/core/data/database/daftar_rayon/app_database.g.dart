@@ -408,6 +408,17 @@ class $PelangganTableTable extends PelangganTable
       'REFERENCES rayon_table (id_rayon)',
     ),
   );
+  static const VerificationMeta _idPelangganMeta = const VerificationMeta(
+    'idPelanggan',
+  );
+  @override
+  late final GeneratedColumn<int> idPelanggan = GeneratedColumn<int>(
+    'id_pelanggan',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _namaMeta = const VerificationMeta('nama');
   @override
   late final GeneratedColumn<String> nama = GeneratedColumn<String>(
@@ -493,6 +504,7 @@ class $PelangganTableTable extends PelangganTable
   List<GeneratedColumn> get $columns => [
     id,
     idRayon,
+    idPelanggan,
     nama,
     alamat,
     noMeter,
@@ -523,6 +535,17 @@ class $PelangganTableTable extends PelangganTable
       );
     } else if (isInserting) {
       context.missing(_idRayonMeta);
+    }
+    if (data.containsKey('id_pelanggan')) {
+      context.handle(
+        _idPelangganMeta,
+        idPelanggan.isAcceptableOrUnknown(
+          data['id_pelanggan']!,
+          _idPelangganMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_idPelangganMeta);
     }
     if (data.containsKey('nama')) {
       context.handle(
@@ -598,6 +621,10 @@ class $PelangganTableTable extends PelangganTable
         DriftSqlType.int,
         data['${effectivePrefix}id_rayon'],
       )!,
+      idPelanggan: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id_pelanggan'],
+      )!,
       nama: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}nama'],
@@ -639,6 +666,7 @@ class PelangganTableData extends DataClass
     implements Insertable<PelangganTableData> {
   final int id;
   final int idRayon;
+  final int idPelanggan;
   final String nama;
   final String alamat;
   final String noMeter;
@@ -649,6 +677,7 @@ class PelangganTableData extends DataClass
   const PelangganTableData({
     required this.id,
     required this.idRayon,
+    required this.idPelanggan,
     required this.nama,
     required this.alamat,
     required this.noMeter,
@@ -662,6 +691,7 @@ class PelangganTableData extends DataClass
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['id_rayon'] = Variable<int>(idRayon);
+    map['id_pelanggan'] = Variable<int>(idPelanggan);
     map['nama'] = Variable<String>(nama);
     map['alamat'] = Variable<String>(alamat);
     map['no_meter'] = Variable<String>(noMeter);
@@ -680,6 +710,7 @@ class PelangganTableData extends DataClass
     return PelangganTableCompanion(
       id: Value(id),
       idRayon: Value(idRayon),
+      idPelanggan: Value(idPelanggan),
       nama: Value(nama),
       alamat: Value(alamat),
       noMeter: Value(noMeter),
@@ -702,6 +733,7 @@ class PelangganTableData extends DataClass
     return PelangganTableData(
       id: serializer.fromJson<int>(json['id']),
       idRayon: serializer.fromJson<int>(json['idRayon']),
+      idPelanggan: serializer.fromJson<int>(json['idPelanggan']),
       nama: serializer.fromJson<String>(json['nama']),
       alamat: serializer.fromJson<String>(json['alamat']),
       noMeter: serializer.fromJson<String>(json['noMeter']),
@@ -717,6 +749,7 @@ class PelangganTableData extends DataClass
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'idRayon': serializer.toJson<int>(idRayon),
+      'idPelanggan': serializer.toJson<int>(idPelanggan),
       'nama': serializer.toJson<String>(nama),
       'alamat': serializer.toJson<String>(alamat),
       'noMeter': serializer.toJson<String>(noMeter),
@@ -730,6 +763,7 @@ class PelangganTableData extends DataClass
   PelangganTableData copyWith({
     int? id,
     int? idRayon,
+    int? idPelanggan,
     String? nama,
     String? alamat,
     String? noMeter,
@@ -740,6 +774,7 @@ class PelangganTableData extends DataClass
   }) => PelangganTableData(
     id: id ?? this.id,
     idRayon: idRayon ?? this.idRayon,
+    idPelanggan: idPelanggan ?? this.idPelanggan,
     nama: nama ?? this.nama,
     alamat: alamat ?? this.alamat,
     noMeter: noMeter ?? this.noMeter,
@@ -752,6 +787,9 @@ class PelangganTableData extends DataClass
     return PelangganTableData(
       id: data.id.present ? data.id.value : this.id,
       idRayon: data.idRayon.present ? data.idRayon.value : this.idRayon,
+      idPelanggan: data.idPelanggan.present
+          ? data.idPelanggan.value
+          : this.idPelanggan,
       nama: data.nama.present ? data.nama.value : this.nama,
       alamat: data.alamat.present ? data.alamat.value : this.alamat,
       noMeter: data.noMeter.present ? data.noMeter.value : this.noMeter,
@@ -775,6 +813,7 @@ class PelangganTableData extends DataClass
     return (StringBuffer('PelangganTableData(')
           ..write('id: $id, ')
           ..write('idRayon: $idRayon, ')
+          ..write('idPelanggan: $idPelanggan, ')
           ..write('nama: $nama, ')
           ..write('alamat: $alamat, ')
           ..write('noMeter: $noMeter, ')
@@ -790,6 +829,7 @@ class PelangganTableData extends DataClass
   int get hashCode => Object.hash(
     id,
     idRayon,
+    idPelanggan,
     nama,
     alamat,
     noMeter,
@@ -804,6 +844,7 @@ class PelangganTableData extends DataClass
       (other is PelangganTableData &&
           other.id == this.id &&
           other.idRayon == this.idRayon &&
+          other.idPelanggan == this.idPelanggan &&
           other.nama == this.nama &&
           other.alamat == this.alamat &&
           other.noMeter == this.noMeter &&
@@ -816,6 +857,7 @@ class PelangganTableData extends DataClass
 class PelangganTableCompanion extends UpdateCompanion<PelangganTableData> {
   final Value<int> id;
   final Value<int> idRayon;
+  final Value<int> idPelanggan;
   final Value<String> nama;
   final Value<String> alamat;
   final Value<String> noMeter;
@@ -826,6 +868,7 @@ class PelangganTableCompanion extends UpdateCompanion<PelangganTableData> {
   const PelangganTableCompanion({
     this.id = const Value.absent(),
     this.idRayon = const Value.absent(),
+    this.idPelanggan = const Value.absent(),
     this.nama = const Value.absent(),
     this.alamat = const Value.absent(),
     this.noMeter = const Value.absent(),
@@ -837,6 +880,7 @@ class PelangganTableCompanion extends UpdateCompanion<PelangganTableData> {
   PelangganTableCompanion.insert({
     this.id = const Value.absent(),
     required int idRayon,
+    required int idPelanggan,
     required String nama,
     required String alamat,
     required String noMeter,
@@ -845,12 +889,14 @@ class PelangganTableCompanion extends UpdateCompanion<PelangganTableData> {
     this.standMeter = const Value.absent(),
     this.statusTerupload = const Value.absent(),
   }) : idRayon = Value(idRayon),
+       idPelanggan = Value(idPelanggan),
        nama = Value(nama),
        alamat = Value(alamat),
        noMeter = Value(noMeter);
   static Insertable<PelangganTableData> custom({
     Expression<int>? id,
     Expression<int>? idRayon,
+    Expression<int>? idPelanggan,
     Expression<String>? nama,
     Expression<String>? alamat,
     Expression<String>? noMeter,
@@ -862,6 +908,7 @@ class PelangganTableCompanion extends UpdateCompanion<PelangganTableData> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (idRayon != null) 'id_rayon': idRayon,
+      if (idPelanggan != null) 'id_pelanggan': idPelanggan,
       if (nama != null) 'nama': nama,
       if (alamat != null) 'alamat': alamat,
       if (noMeter != null) 'no_meter': noMeter,
@@ -875,6 +922,7 @@ class PelangganTableCompanion extends UpdateCompanion<PelangganTableData> {
   PelangganTableCompanion copyWith({
     Value<int>? id,
     Value<int>? idRayon,
+    Value<int>? idPelanggan,
     Value<String>? nama,
     Value<String>? alamat,
     Value<String>? noMeter,
@@ -886,6 +934,7 @@ class PelangganTableCompanion extends UpdateCompanion<PelangganTableData> {
     return PelangganTableCompanion(
       id: id ?? this.id,
       idRayon: idRayon ?? this.idRayon,
+      idPelanggan: idPelanggan ?? this.idPelanggan,
       nama: nama ?? this.nama,
       alamat: alamat ?? this.alamat,
       noMeter: noMeter ?? this.noMeter,
@@ -904,6 +953,9 @@ class PelangganTableCompanion extends UpdateCompanion<PelangganTableData> {
     }
     if (idRayon.present) {
       map['id_rayon'] = Variable<int>(idRayon.value);
+    }
+    if (idPelanggan.present) {
+      map['id_pelanggan'] = Variable<int>(idPelanggan.value);
     }
     if (nama.present) {
       map['nama'] = Variable<String>(nama.value);
@@ -934,6 +986,7 @@ class PelangganTableCompanion extends UpdateCompanion<PelangganTableData> {
     return (StringBuffer('PelangganTableCompanion(')
           ..write('id: $id, ')
           ..write('idRayon: $idRayon, ')
+          ..write('idPelanggan: $idPelanggan, ')
           ..write('nama: $nama, ')
           ..write('alamat: $alamat, ')
           ..write('noMeter: $noMeter, ')
@@ -1271,6 +1324,7 @@ typedef $$PelangganTableTableCreateCompanionBuilder =
     PelangganTableCompanion Function({
       Value<int> id,
       required int idRayon,
+      required int idPelanggan,
       required String nama,
       required String alamat,
       required String noMeter,
@@ -1283,6 +1337,7 @@ typedef $$PelangganTableTableUpdateCompanionBuilder =
     PelangganTableCompanion Function({
       Value<int> id,
       Value<int> idRayon,
+      Value<int> idPelanggan,
       Value<String> nama,
       Value<String> alamat,
       Value<String> noMeter,
@@ -1336,6 +1391,11 @@ class $$PelangganTableTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get idPelanggan => $composableBuilder(
+    column: $table.idPelanggan,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1412,6 +1472,11 @@ class $$PelangganTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get idPelanggan => $composableBuilder(
+    column: $table.idPelanggan,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get nama => $composableBuilder(
     column: $table.nama,
     builder: (column) => ColumnOrderings(column),
@@ -1482,6 +1547,11 @@ class $$PelangganTableTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get idPelanggan => $composableBuilder(
+    column: $table.idPelanggan,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get nama =>
       $composableBuilder(column: $table.nama, builder: (column) => column);
@@ -1568,6 +1638,7 @@ class $$PelangganTableTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<int> idRayon = const Value.absent(),
+                Value<int> idPelanggan = const Value.absent(),
                 Value<String> nama = const Value.absent(),
                 Value<String> alamat = const Value.absent(),
                 Value<String> noMeter = const Value.absent(),
@@ -1578,6 +1649,7 @@ class $$PelangganTableTableTableManager
               }) => PelangganTableCompanion(
                 id: id,
                 idRayon: idRayon,
+                idPelanggan: idPelanggan,
                 nama: nama,
                 alamat: alamat,
                 noMeter: noMeter,
@@ -1590,6 +1662,7 @@ class $$PelangganTableTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required int idRayon,
+                required int idPelanggan,
                 required String nama,
                 required String alamat,
                 required String noMeter,
@@ -1600,6 +1673,7 @@ class $$PelangganTableTableTableManager
               }) => PelangganTableCompanion.insert(
                 id: id,
                 idRayon: idRayon,
+                idPelanggan: idPelanggan,
                 nama: nama,
                 alamat: alamat,
                 noMeter: noMeter,

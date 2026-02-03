@@ -9,9 +9,7 @@ import '../tables/tables/Rayon/rayon_table.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(
-  tables: [RayonTable, PelangganTable],
-)
+@DriftDatabase(tables: [RayonTable, PelangganTable])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 

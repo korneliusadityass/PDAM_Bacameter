@@ -6,10 +6,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:remixicon/remixicon.dart';
 
+import '../../../../../data/database/daftar_rayon/app_database.dart';
+import '../../../../../data/enum/database/database_status.dart';
+import '../../../../../data/injection/injection.dart';
 import '../../../../commons/extensions/context_extension.dart';
 import '../../../../commons/language/language.dart';
 import '../../../../commons/routes/routes.dart';
 import '../../../../commons/themes/text_styel.dart';
+import '../../../../manager/database_helper.dart';
 import '../../../../widget/custom_keyboard/custom_keyboard.dart';
 
 class LastDigitPage extends StatefulWidget {
@@ -22,30 +26,68 @@ class LastDigitPage extends StatefulWidget {
 class _LastDigitPageState extends State<LastDigitPage> {
   String _inputValue = '';
   bool _showKeyboard = false;
-  Map<String, dynamic>? _searchResult;
-  final List<Map<String, String>> _searchHistory = [];
 
-  // Method untuk menambahkan riwayat pencarian
-  void _addToSearchHistory(String lastDigits, String name, String fullNumber) {
-    // Cek apakah sudah ada dalam riwayat dengan lastDigits yang sama
-    bool alreadyExists = _searchHistory.any(
-      (item) => item['lastDigits'] == lastDigits,
-    );
+  List<PelangganTableData> _searchResult = [];
+  final List<PelangganTableData> _searchHistory = [];
 
-    if (!alreadyExists) {
-      setState(() {
-        _searchHistory.insert(0, {
-          'lastDigits': lastDigits,
-          'name': name,
-          'fullNumber': fullNumber,
-        });
+  late final DatabaseHelper _dbHelper;
+  String? _errorMessage;
 
-        // Batasi riwayat maksimal 10 item (opsional)
-        if (_searchHistory.length > 10) {
-          _searchHistory.removeLast();
-        }
-      });
+  PageStatus? _status;
+
+  void _onTapSearchResult(PelangganTableData pelanggan) {
+    final exists = _searchHistory.any((e) => e.id == pelanggan.id);
+
+    if (!exists) {
+      _searchHistory.insert(0, pelanggan);
+
+      if (_searchHistory.length > 10) {
+        _searchHistory.removeLast();
+      }
     }
+
+    setState(() {});
+  }
+
+  Future<void> _onSearch(String value) async {
+    if (value.length != 3) return;
+
+    setState(() {
+      _status = PageStatus.loading;
+      _errorMessage = null;
+      _searchResult.clear();
+    });
+
+    final result = await _dbHelper.searchPelangganByLastIdDigit(value);
+
+    result.fold(
+      (failure) {
+        setState(() {
+          _status = PageStatus.error;
+          _errorMessage = failure.message;
+          _searchResult.clear();
+        });
+      },
+      (list) {
+        if (list.isEmpty) {
+          setState(() {
+            _status = PageStatus.empty;
+            _searchResult.clear();
+          });
+        } else {
+          setState(() {
+            _status = PageStatus.loaded;
+            _searchResult = list;
+          });
+        }
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    _dbHelper = sl<DatabaseHelper>();
+    super.initState();
   }
 
   @override
@@ -120,7 +162,7 @@ class _LastDigitPageState extends State<LastDigitPage> {
       children: [
         // 🔥 AREA BACKGROUND
         Expanded(
-          flex: 2, // tinggi relatif (background)
+          flex: 2,
           child: Padding(
             padding: EdgeInsets.only(
               left: defaultMargin.w,
@@ -158,7 +200,7 @@ class _LastDigitPageState extends State<LastDigitPage> {
           ),
         ),
         Expanded(
-          flex: 8, // tinggi relatif (background)
+          flex: 8,
           child: Container(
             width: double.infinity,
             padding: EdgeInsets.only(
@@ -169,7 +211,7 @@ class _LastDigitPageState extends State<LastDigitPage> {
             ),
             clipBehavior: Clip.antiAlias,
             decoration: ShapeDecoration(
-              color: Colors.white /* Color-Base-color-Background-Bg-white */,
+              color: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(24),
@@ -191,10 +233,7 @@ class _LastDigitPageState extends State<LastDigitPage> {
                   ),
                 ),
 
-                // verticalSpace(16.h),
-                _inputValue.length == 3
-                    ? _buildSearchResult()
-                    : _buildSearchHistory(),
+                _buildContentBody(),
               ],
             ),
           ),
@@ -203,11 +242,38 @@ class _LastDigitPageState extends State<LastDigitPage> {
     );
   }
 
-  Widget _buildSearchHistory() {
-    if (_searchHistory.isEmpty) {
+  Widget _buildContentBody() {
+    // 🔹 BELUM SEARCH (input belum 3 digit)
+    if (_inputValue.length != 3) {
+      if (_searchHistory.isNotEmpty) {
+        return _buildSearchHistory();
+      }
       return _buildEmpty();
     }
 
+    // 🔹 SUDAH SEARCH → pakai PageStatus
+    switch (_status) {
+      case PageStatus.loading:
+        return const Center(child: CircularProgressIndicator());
+
+      case PageStatus.error:
+        return Center(
+          child: Text(
+            _errorMessage ?? 'Terjadi kesalahan',
+            style: const TextStyle(color: Colors.red),
+          ),
+        );
+
+      case PageStatus.loaded:
+        return _buildSearchResult();
+
+      case PageStatus.empty:
+      default:
+        return _buildEmpty();
+    }
+  }
+
+  Widget _buildSearchHistory() {
     return ListView.separated(
       shrinkWrap: true,
       physics: const AlwaysScrollableScrollPhysics(),
@@ -221,48 +287,51 @@ class _LastDigitPageState extends State<LastDigitPage> {
         ],
       ),
       itemBuilder: (context, index) {
-        final item = _searchHistory[index];
+        final pelanggan = _searchHistory[index];
+        final idStr = pelanggan.idPelanggan.toString();
+        final last3 = idStr.length >= 3
+            ? idStr.substring(idStr.length - 3)
+            : idStr;
+
         return Padding(
           padding: EdgeInsets.only(
             bottom: index == _searchHistory.length - 1 ? 300.h : 0.h,
             top: index == 0 ? 16.h : 0.h,
           ),
-          child: GestureDetector(
-            onTap: () {
-              // Ketika item riwayat diklik, isi input dengan lastDigits
-              setState(() {
-                _inputValue = item['lastDigits']!;
-                _searchResult = {
-                  'nomor': item['fullNumber'],
-                  'nama': item['name'],
-                  'lokasi':
-                      'BONTOMANAI', // Anda bisa simpan lokasi juga jika perlu
-                };
-              });
-            },
-            child: ListTile(
-              dense: true,
-              visualDensity: VisualDensity.compact,
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                item['name']!,
-                style: TextStyle(
-                  color: baseBlack,
-                  fontSize: 14.sp,
-                  fontFamily: 'Inter',
-                  fontWeight: regular,
-                ),
-              ),
-              trailing: Text(
-                '*******${item['lastDigits']!}',
-                style: TextStyle(
-                  color: baseBlack,
-                  fontSize: 14.sp,
-                  fontFamily: 'Inter',
-                  fontWeight: regular,
-                ),
+          child: ListTile(
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            contentPadding: EdgeInsets.zero,
+            title: Text(
+              pelanggan.nama,
+              style: TextStyle(
+                color: baseBlack,
+                fontSize: 14.sp,
+                fontFamily: 'Inter',
+                fontWeight: regular,
               ),
             ),
+            trailing: Text(
+              '*******$last3',
+              style: TextStyle(
+                color: baseBlack,
+                fontSize: 14.sp,
+                fontFamily: 'Inter',
+                fontWeight: regular,
+              ),
+            ),
+            onTap: () {
+              // setState(() {
+              // _inputValue = last3;
+              // _searchResult
+              //   ..clear()
+              //   ..add(pelanggan);
+              // });
+              context.pushNamed(
+                Routes.detailPelangganPage,
+                extra: pelanggan, // kirim object langsung
+              );
+            },
           ),
         );
       },
@@ -270,29 +339,36 @@ class _LastDigitPageState extends State<LastDigitPage> {
   }
 
   Widget _buildSearchResult() {
-    final fullNumber = _searchResult?['nomor'] ?? '2039948885990';
-    final name = _searchResult?['nama'] ?? 'Rey Ronald';
-    final location = _searchResult?['lokasi'] ?? 'BONTOMANAI';
+    // if (_searchResult.isEmpty) return const SizedBox();
+    final pelanggan = _searchResult.first;
+    final fullNumber = pelanggan.idPelanggan.toString();
+    final name = pelanggan.nama;
+    final location = pelanggan.alamat;
 
-    // Pisahkan 3 digit terakhir
-    final last3Digits = fullNumber.substring(fullNumber.length - 3);
-    final prefix = fullNumber.substring(0, fullNumber.length - 3);
+    // Aman dari RangeError
+    final last3Digits = fullNumber.length > 3
+        ? fullNumber.substring(fullNumber.length - 3)
+        : fullNumber;
+    final prefix = fullNumber.length > 3
+        ? fullNumber.substring(0, fullNumber.length - 3)
+        : '';
 
     return Column(
       children: [
         verticalSpace(16.h),
         GestureDetector(
           onTap: () {
-            // Simpan ke riwayat sebelum navigasi
-            _addToSearchHistory(last3Digits, name, fullNumber);
-
-            context.pushNamed(Routes.detailPelangganPage);
+            _onTapSearchResult(pelanggan);
+            context.pushNamed(
+              Routes.detailPelangganPage,
+              extra: pelanggan, // kirim object
+            );
           },
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
             width: double.infinity,
             decoration: ShapeDecoration(
-              color: Colors.white /* Color-Base-color-Background-Bg-white */,
+              color: Colors.white,
               shape: RoundedRectangleBorder(
                 side: BorderSide(width: 1, color: borderDefault),
                 borderRadius: BorderRadius.circular(12),
@@ -300,9 +376,7 @@ class _LastDigitPageState extends State<LastDigitPage> {
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Nomor Pelanggan dengan highlight 3 digit terakhir
                 Text.rich(
                   TextSpan(
                     children: [
@@ -313,6 +387,7 @@ class _LastDigitPageState extends State<LastDigitPage> {
                           fontSize: 14.sp,
                           fontFamily: 'Inter',
                           fontWeight: regular,
+                          height: 1.43,
                         ),
                       ),
                       TextSpan(
@@ -333,8 +408,8 @@ class _LastDigitPageState extends State<LastDigitPage> {
                   style: TextStyle(
                     color: text700,
                     fontSize: 16.sp,
-                    fontFamily: 'Inter',
                     fontWeight: bold,
+                    fontFamily: 'Inter',
                   ),
                 ),
                 verticalSpace(8.h),
@@ -428,31 +503,11 @@ class _LastDigitPageState extends State<LastDigitPage> {
     if (_inputValue.length < 3) {
       setState(() {
         _inputValue += value;
-        // Reset hasil pencarian saat input berubah
-        if (_inputValue.length < 3) {
-          _searchResult = null;
-        }
+        // // Reset hasil pencarian saat input berubah
+        // if (_inputValue.length < 3) {
+        //   _searchResult = null;
+        // }
       });
-    }
-
-    // 🔥 Auto-search ketika sudah 3 digit
-    if (_inputValue.length == 3) {
-      final searchData = {
-        'nomor': '2039948885$_inputValue',
-        'nama': 'Rey Ronald',
-        'lokasi': 'BONTOMANAI',
-      };
-
-      setState(() {
-        _searchResult = searchData;
-      });
-
-      // Simpan ke riwayat pencarian
-      _addToSearchHistory(
-        _inputValue,
-        searchData['nama']!,
-        searchData['nomor']!,
-      );
     }
   }
 
@@ -467,7 +522,6 @@ class _LastDigitPageState extends State<LastDigitPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              // Expanded(child: _buildNumberButton('1')),
               Expanded(
                 child: CustomKeyboardButton(
                   label: '1',
@@ -588,7 +642,7 @@ class _LastDigitPageState extends State<LastDigitPage> {
                   onTap: (value) {
                     setState(() {
                       _inputValue = '';
-                      _searchResult = null;
+                      // _searchResult = null;
                     });
                   },
                 ),
@@ -622,27 +676,25 @@ class _LastDigitPageState extends State<LastDigitPage> {
   }
 
   void _doneSearch() {
+    // if (_inputValue.length == 3) {
+    //   _onSearch(_inputValue);
+    // } else {
+    //   ScaffoldMessenger.of(
+    //     context,
+    //   ).showSnackBar(const SnackBar(content: Text('Masukkan 3 digit')));
+    // }
     if (_inputValue.length == 3) {
-      // Simulasi pencarian — ganti dengan API/Database nanti
-      final searchData = {
-        'nomor': '2039948885$_inputValue',
-        'nama': 'Rey Ronald',
-        'lokasi': 'BONTOMANAI',
-      };
-      setState(() {
-        _searchResult = searchData;
-      });
-      // Simpan ke riwayat pencarian
-      _addToSearchHistory(
-        _inputValue,
-        searchData['nama']!,
-        searchData['nomor']!,
-      );
+      _onSearch(_inputValue);
     } else {
+      setState(() {
+        _status = PageStatus.empty;
+      });
+
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Masukkan 3 digit')));
     }
+
     // Tutup keyboard setelah submit
     setState(() {
       _showKeyboard = false;

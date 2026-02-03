@@ -62,6 +62,7 @@ class DatabaseHelper {
       // Rayon A
       PelangganTableCompanion.insert(
         idRayon: 1,
+        idPelanggan: 1238173123,
         nama: 'Budi Santoso',
         alamat: 'Jl. Merdeka No. 1',
         noMeter: 'MTR001',
@@ -73,6 +74,7 @@ class DatabaseHelper {
       PelangganTableCompanion.insert(
         idRayon: 1,
         nama: 'Siti Aminah',
+        idPelanggan: 1238173124,
         alamat: 'Jl. Merdeka No. 2',
         noMeter: 'MTR002',
         sudahDibaca: const Value(false),
@@ -83,6 +85,7 @@ class DatabaseHelper {
       PelangganTableCompanion.insert(
         idRayon: 1,
         nama: 'Andi Wijaya',
+        idPelanggan: 1238173125,
         alamat: 'Jl. Merdeka No. 3',
         noMeter: 'MTR003',
         sudahDibaca: const Value(false),
@@ -95,6 +98,7 @@ class DatabaseHelper {
       PelangganTableCompanion.insert(
         idRayon: 2,
         nama: 'Dewi Lestari',
+        idPelanggan: 1238173001,
         alamat: 'Jl. Sudirman No. 10',
         noMeter: 'MTR004',
         sudahDibaca: const Value(false),
@@ -104,6 +108,7 @@ class DatabaseHelper {
       ),
       PelangganTableCompanion.insert(
         idRayon: 2,
+        idPelanggan: 1238173002,
         nama: 'Agus Salim',
         alamat: 'Jl. Sudirman No. 11',
         noMeter: 'MTR005',
@@ -209,4 +214,42 @@ class DatabaseHelper {
       );
     });
   }
+
+  Future<Either<Failure, List<PelangganTableData>>>
+  searchPelangganByLastIdDigit(String lastDigit) async {
+    try {
+      final query = db.customSelect(
+        '''
+      SELECT *
+      FROM pelanggan_table
+      WHERE CAST(id_pelanggan AS TEXT) LIKE ?
+      ORDER BY id DESC
+      ''',
+        variables: [Variable.withString('%$lastDigit')],
+        readsFrom: {db.pelangganTable},
+      );
+
+      final result = await query
+          .map(
+            (row) => PelangganTableData(
+              id: row.read<int>('id'),
+              idRayon: row.read<int>('id_rayon'),
+              idPelanggan: row.read<int>('id_pelanggan'),
+              nama: row.read<String>('nama'),
+              alamat: row.read<String>('alamat'),
+              noMeter: row.read<String>('no_meter'),
+              sudahDibaca: row.read<bool>('sudah_dibaca'),
+              tanggalBaca: row.read<DateTime?>('tanggal_baca'),
+              standMeter: row.read<int?>('stand_meter'),
+              statusTerupload: row.read<bool>('status_terupload'),
+            ),
+          )
+          .get();
+
+      return right(result);
+    } catch (e) {
+      return left(ServerFailure('Gagal mencari pelanggan'));
+    }
+  }
+
 }
