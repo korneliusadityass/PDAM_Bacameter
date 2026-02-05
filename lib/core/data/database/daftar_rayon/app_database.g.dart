@@ -999,11 +999,275 @@ class PelangganTableCompanion extends UpdateCompanion<PelangganTableData> {
   }
 }
 
+class $SearchHistoryTableTable extends SearchHistoryTable
+    with TableInfo<$SearchHistoryTableTable, SearchHistoryTableData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SearchHistoryTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _pelangganIdMeta = const VerificationMeta(
+    'pelangganId',
+  );
+  @override
+  late final GeneratedColumn<int> pelangganId = GeneratedColumn<int>(
+    'pelanggan_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES pelanggan_table (id)',
+    ),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, pelangganId, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'search_history_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SearchHistoryTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('pelanggan_id')) {
+      context.handle(
+        _pelangganIdMeta,
+        pelangganId.isAcceptableOrUnknown(
+          data['pelanggan_id']!,
+          _pelangganIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_pelangganIdMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SearchHistoryTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SearchHistoryTableData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      pelangganId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pelanggan_id'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $SearchHistoryTableTable createAlias(String alias) {
+    return $SearchHistoryTableTable(attachedDatabase, alias);
+  }
+}
+
+class SearchHistoryTableData extends DataClass
+    implements Insertable<SearchHistoryTableData> {
+  final int id;
+  final int pelangganId;
+  final DateTime createdAt;
+  const SearchHistoryTableData({
+    required this.id,
+    required this.pelangganId,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['pelanggan_id'] = Variable<int>(pelangganId);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  SearchHistoryTableCompanion toCompanion(bool nullToAbsent) {
+    return SearchHistoryTableCompanion(
+      id: Value(id),
+      pelangganId: Value(pelangganId),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory SearchHistoryTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SearchHistoryTableData(
+      id: serializer.fromJson<int>(json['id']),
+      pelangganId: serializer.fromJson<int>(json['pelangganId']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'pelangganId': serializer.toJson<int>(pelangganId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  SearchHistoryTableData copyWith({
+    int? id,
+    int? pelangganId,
+    DateTime? createdAt,
+  }) => SearchHistoryTableData(
+    id: id ?? this.id,
+    pelangganId: pelangganId ?? this.pelangganId,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  SearchHistoryTableData copyWithCompanion(SearchHistoryTableCompanion data) {
+    return SearchHistoryTableData(
+      id: data.id.present ? data.id.value : this.id,
+      pelangganId: data.pelangganId.present
+          ? data.pelangganId.value
+          : this.pelangganId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SearchHistoryTableData(')
+          ..write('id: $id, ')
+          ..write('pelangganId: $pelangganId, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, pelangganId, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SearchHistoryTableData &&
+          other.id == this.id &&
+          other.pelangganId == this.pelangganId &&
+          other.createdAt == this.createdAt);
+}
+
+class SearchHistoryTableCompanion
+    extends UpdateCompanion<SearchHistoryTableData> {
+  final Value<int> id;
+  final Value<int> pelangganId;
+  final Value<DateTime> createdAt;
+  const SearchHistoryTableCompanion({
+    this.id = const Value.absent(),
+    this.pelangganId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  SearchHistoryTableCompanion.insert({
+    this.id = const Value.absent(),
+    required int pelangganId,
+    this.createdAt = const Value.absent(),
+  }) : pelangganId = Value(pelangganId);
+  static Insertable<SearchHistoryTableData> custom({
+    Expression<int>? id,
+    Expression<int>? pelangganId,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (pelangganId != null) 'pelanggan_id': pelangganId,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  SearchHistoryTableCompanion copyWith({
+    Value<int>? id,
+    Value<int>? pelangganId,
+    Value<DateTime>? createdAt,
+  }) {
+    return SearchHistoryTableCompanion(
+      id: id ?? this.id,
+      pelangganId: pelangganId ?? this.pelangganId,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (pelangganId.present) {
+      map['pelanggan_id'] = Variable<int>(pelangganId.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SearchHistoryTableCompanion(')
+          ..write('id: $id, ')
+          ..write('pelangganId: $pelangganId, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $RayonTableTable rayonTable = $RayonTableTable(this);
   late final $PelangganTableTable pelangganTable = $PelangganTableTable(this);
+  late final $SearchHistoryTableTable searchHistoryTable =
+      $SearchHistoryTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1011,6 +1275,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     rayonTable,
     pelangganTable,
+    searchHistoryTable,
   ];
 }
 
@@ -1378,6 +1643,33 @@ final class $$PelangganTableTableReferences
       manager.$state.copyWith(prefetchedData: [item]),
     );
   }
+
+  static MultiTypedResultKey<
+    $SearchHistoryTableTable,
+    List<SearchHistoryTableData>
+  >
+  _searchHistoryTableRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.searchHistoryTable,
+        aliasName: $_aliasNameGenerator(
+          db.pelangganTable.id,
+          db.searchHistoryTable.pelangganId,
+        ),
+      );
+
+  $$SearchHistoryTableTableProcessedTableManager get searchHistoryTableRefs {
+    final manager = $$SearchHistoryTableTableTableManager(
+      $_db,
+      $_db.searchHistoryTable,
+    ).filter((f) => f.pelangganId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _searchHistoryTableRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$PelangganTableTableFilterComposer
@@ -1455,6 +1747,31 @@ class $$PelangganTableTableFilterComposer
           ),
     );
     return composer;
+  }
+
+  Expression<bool> searchHistoryTableRefs(
+    Expression<bool> Function($$SearchHistoryTableTableFilterComposer f) f,
+  ) {
+    final $$SearchHistoryTableTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.searchHistoryTable,
+      getReferencedColumn: (t) => t.pelangganId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SearchHistoryTableTableFilterComposer(
+            $db: $db,
+            $table: $db.searchHistoryTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
   }
 }
 
@@ -1604,6 +1921,32 @@ class $$PelangganTableTableAnnotationComposer
     );
     return composer;
   }
+
+  Expression<T> searchHistoryTableRefs<T extends Object>(
+    Expression<T> Function($$SearchHistoryTableTableAnnotationComposer a) f,
+  ) {
+    final $$SearchHistoryTableTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.searchHistoryTable,
+          getReferencedColumn: (t) => t.pelangganId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$SearchHistoryTableTableAnnotationComposer(
+                $db: $db,
+                $table: $db.searchHistoryTable,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$PelangganTableTableTableManager
@@ -1619,7 +1962,7 @@ class $$PelangganTableTableTableManager
           $$PelangganTableTableUpdateCompanionBuilder,
           (PelangganTableData, $$PelangganTableTableReferences),
           PelangganTableData,
-          PrefetchHooks Function({bool idRayon})
+          PrefetchHooks Function({bool idRayon, bool searchHistoryTableRefs})
         > {
   $$PelangganTableTableTableManager(
     _$AppDatabase db,
@@ -1690,7 +2033,326 @@ class $$PelangganTableTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({idRayon = false}) {
+          prefetchHooksCallback:
+              ({idRayon = false, searchHistoryTableRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (searchHistoryTableRefs) db.searchHistoryTable,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (idRayon) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.idRayon,
+                                    referencedTable:
+                                        $$PelangganTableTableReferences
+                                            ._idRayonTable(db),
+                                    referencedColumn:
+                                        $$PelangganTableTableReferences
+                                            ._idRayonTable(db)
+                                            .idRayon,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (searchHistoryTableRefs)
+                        await $_getPrefetchedData<
+                          PelangganTableData,
+                          $PelangganTableTable,
+                          SearchHistoryTableData
+                        >(
+                          currentTable: table,
+                          referencedTable: $$PelangganTableTableReferences
+                              ._searchHistoryTableRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$PelangganTableTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).searchHistoryTableRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.pelangganId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$PelangganTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PelangganTableTable,
+      PelangganTableData,
+      $$PelangganTableTableFilterComposer,
+      $$PelangganTableTableOrderingComposer,
+      $$PelangganTableTableAnnotationComposer,
+      $$PelangganTableTableCreateCompanionBuilder,
+      $$PelangganTableTableUpdateCompanionBuilder,
+      (PelangganTableData, $$PelangganTableTableReferences),
+      PelangganTableData,
+      PrefetchHooks Function({bool idRayon, bool searchHistoryTableRefs})
+    >;
+typedef $$SearchHistoryTableTableCreateCompanionBuilder =
+    SearchHistoryTableCompanion Function({
+      Value<int> id,
+      required int pelangganId,
+      Value<DateTime> createdAt,
+    });
+typedef $$SearchHistoryTableTableUpdateCompanionBuilder =
+    SearchHistoryTableCompanion Function({
+      Value<int> id,
+      Value<int> pelangganId,
+      Value<DateTime> createdAt,
+    });
+
+final class $$SearchHistoryTableTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $SearchHistoryTableTable,
+          SearchHistoryTableData
+        > {
+  $$SearchHistoryTableTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $PelangganTableTable _pelangganIdTable(_$AppDatabase db) =>
+      db.pelangganTable.createAlias(
+        $_aliasNameGenerator(
+          db.searchHistoryTable.pelangganId,
+          db.pelangganTable.id,
+        ),
+      );
+
+  $$PelangganTableTableProcessedTableManager get pelangganId {
+    final $_column = $_itemColumn<int>('pelanggan_id')!;
+
+    final manager = $$PelangganTableTableTableManager(
+      $_db,
+      $_db.pelangganTable,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_pelangganIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$SearchHistoryTableTableFilterComposer
+    extends Composer<_$AppDatabase, $SearchHistoryTableTable> {
+  $$SearchHistoryTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PelangganTableTableFilterComposer get pelangganId {
+    final $$PelangganTableTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.pelangganId,
+      referencedTable: $db.pelangganTable,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PelangganTableTableFilterComposer(
+            $db: $db,
+            $table: $db.pelangganTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SearchHistoryTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $SearchHistoryTableTable> {
+  $$SearchHistoryTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PelangganTableTableOrderingComposer get pelangganId {
+    final $$PelangganTableTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.pelangganId,
+      referencedTable: $db.pelangganTable,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PelangganTableTableOrderingComposer(
+            $db: $db,
+            $table: $db.pelangganTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SearchHistoryTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SearchHistoryTableTable> {
+  $$SearchHistoryTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$PelangganTableTableAnnotationComposer get pelangganId {
+    final $$PelangganTableTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.pelangganId,
+      referencedTable: $db.pelangganTable,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PelangganTableTableAnnotationComposer(
+            $db: $db,
+            $table: $db.pelangganTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SearchHistoryTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SearchHistoryTableTable,
+          SearchHistoryTableData,
+          $$SearchHistoryTableTableFilterComposer,
+          $$SearchHistoryTableTableOrderingComposer,
+          $$SearchHistoryTableTableAnnotationComposer,
+          $$SearchHistoryTableTableCreateCompanionBuilder,
+          $$SearchHistoryTableTableUpdateCompanionBuilder,
+          (SearchHistoryTableData, $$SearchHistoryTableTableReferences),
+          SearchHistoryTableData,
+          PrefetchHooks Function({bool pelangganId})
+        > {
+  $$SearchHistoryTableTableTableManager(
+    _$AppDatabase db,
+    $SearchHistoryTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SearchHistoryTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SearchHistoryTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SearchHistoryTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> pelangganId = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => SearchHistoryTableCompanion(
+                id: id,
+                pelangganId: pelangganId,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int pelangganId,
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => SearchHistoryTableCompanion.insert(
+                id: id,
+                pelangganId: pelangganId,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$SearchHistoryTableTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({pelangganId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -1710,17 +2372,18 @@ class $$PelangganTableTableTableManager
                       dynamic
                     >
                   >(state) {
-                    if (idRayon) {
+                    if (pelangganId) {
                       state =
                           state.withJoin(
                                 currentTable: table,
-                                currentColumn: table.idRayon,
-                                referencedTable: $$PelangganTableTableReferences
-                                    ._idRayonTable(db),
+                                currentColumn: table.pelangganId,
+                                referencedTable:
+                                    $$SearchHistoryTableTableReferences
+                                        ._pelangganIdTable(db),
                                 referencedColumn:
-                                    $$PelangganTableTableReferences
-                                        ._idRayonTable(db)
-                                        .idRayon,
+                                    $$SearchHistoryTableTableReferences
+                                        ._pelangganIdTable(db)
+                                        .id,
                               )
                               as T;
                     }
@@ -1736,19 +2399,19 @@ class $$PelangganTableTableTableManager
       );
 }
 
-typedef $$PelangganTableTableProcessedTableManager =
+typedef $$SearchHistoryTableTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
-      $PelangganTableTable,
-      PelangganTableData,
-      $$PelangganTableTableFilterComposer,
-      $$PelangganTableTableOrderingComposer,
-      $$PelangganTableTableAnnotationComposer,
-      $$PelangganTableTableCreateCompanionBuilder,
-      $$PelangganTableTableUpdateCompanionBuilder,
-      (PelangganTableData, $$PelangganTableTableReferences),
-      PelangganTableData,
-      PrefetchHooks Function({bool idRayon})
+      $SearchHistoryTableTable,
+      SearchHistoryTableData,
+      $$SearchHistoryTableTableFilterComposer,
+      $$SearchHistoryTableTableOrderingComposer,
+      $$SearchHistoryTableTableAnnotationComposer,
+      $$SearchHistoryTableTableCreateCompanionBuilder,
+      $$SearchHistoryTableTableUpdateCompanionBuilder,
+      (SearchHistoryTableData, $$SearchHistoryTableTableReferences),
+      SearchHistoryTableData,
+      PrefetchHooks Function({bool pelangganId})
     >;
 
 class $AppDatabaseManager {
@@ -1758,4 +2421,6 @@ class $AppDatabaseManager {
       $$RayonTableTableTableManager(_db, _db.rayonTable);
   $$PelangganTableTableTableManager get pelangganTable =>
       $$PelangganTableTableTableManager(_db, _db.pelangganTable);
+  $$SearchHistoryTableTableTableManager get searchHistoryTable =>
+      $$SearchHistoryTableTableTableManager(_db, _db.searchHistoryTable);
 }

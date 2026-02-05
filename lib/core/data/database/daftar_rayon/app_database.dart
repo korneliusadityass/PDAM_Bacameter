@@ -6,10 +6,11 @@ import 'package:path/path.dart' as p;
 
 import '../tables/tables/Pelanggan/pelanggan_table.dart';
 import '../tables/tables/Rayon/rayon_table.dart';
+import '../tables/tables/SearchHistory/search_history_table.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [RayonTable, PelangganTable])
+@DriftDatabase(tables: [RayonTable, PelangganTable, SearchHistoryTable])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 

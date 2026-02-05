@@ -5,10 +5,13 @@ import 'package:baca_meter/core/presentation/commons/methods/methods.dart';
 import 'package:baca_meter/core/presentation/commons/themes/color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:remixicon/remixicon.dart';
 
+import '../../../data/injection/injection.dart';
 import '../../commons/extensions/context_extension.dart';
 import '../../commons/themes/text_styel.dart';
+import '../../manager/database_helper.dart';
 
 class ManagementDataPage extends StatefulWidget {
   const ManagementDataPage({super.key});
@@ -19,6 +22,35 @@ class ManagementDataPage extends StatefulWidget {
 
 class _ManagementDataPageState extends State<ManagementDataPage>
     with AutomaticKeepAliveClientMixin {
+  late final DatabaseHelper _dbHelper;
+
+  @override
+  void initState() {
+    _dbHelper = sl<DatabaseHelper>();
+    super.initState();
+  }
+
+  Future<void> initDummy() async {
+    final result = await _dbHelper.initDummyData();
+
+    result.fold(
+      (failure) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(failure.message)));
+        }
+      },
+      (_) async {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Data dummy berhasil diinisialisasi')),
+          );
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final width = context.width;
@@ -125,8 +157,8 @@ class _ManagementDataPageState extends State<ManagementDataPage>
                   children: [
                     Expanded(
                       child: GestureDetector(
-                        onTap: () {
-                          _showDownloadDialog(context);
+                        onTap: () async {
+                          await _showDownloadDialog(context);
                         },
                         child: _buildDownloadMaster(context),
                       ),
@@ -319,139 +351,252 @@ class _ManagementDataPageState extends State<ManagementDataPage>
     );
   }
 
-  void _showDownloadDialog(BuildContext context) {
-    double progress = 0.0;
-    int currentSize = 0;
-    const int totalSize = 5000; // 5MB
-    Timer? timer;
+  Future<void> _showDownloadDialog(BuildContext context) async {
+    // double progress = 0.0;
+    // int currentSize = 0;
+    // const int totalSize = 5000; // 5MB
+    // Timer? timer;
+
+    // showDialog(
+    //   context: context,
+    //   barrierDismissible: false,
+    //   builder: (BuildContext context) {
+    //     return StatefulBuilder(
+    //       builder: (context, setState) {
+    //         timer ??= Timer.periodic(const Duration(milliseconds: 100), (
+    //           Timer t,
+    //         ) {
+    //           if (progress < 1.0) {
+    //             setState(() {
+    //               currentSize += 50;
+    //               progress = currentSize / totalSize;
+    //             });
+    //           } else {
+    //             t.cancel();
+    //             Future.delayed(const Duration(seconds: 1), () {
+    //               // ignore: use_build_context_synchronously
+    //               Navigator.pop(context);
+    //             });
+    //           }
+    //         });
+
+    //         return AlertDialog(
+    //           shape: RoundedRectangleBorder(
+    //             borderRadius: BorderRadius.circular(20.r),
+    //           ),
+    //           contentPadding:
+    //               EdgeInsets.zero, // Penting: hilangkan padding default
+    //           backgroundColor:
+    //               Colors.transparent, // Agar tidak bentrok dengan container
+    //           content: Container(
+    //             width: double.infinity,
+    //             decoration: ShapeDecoration(
+    //               color:
+    //                   Colors.white /* Color-Base-color-Background-Bg-white */,
+    //               shape: RoundedRectangleBorder(
+    //                 borderRadius: BorderRadius.circular(16),
+    //               ),
+    //             ),
+    //             padding: EdgeInsets.symmetric(
+    //               horizontal: 16.w,
+    //               vertical: 16.h,
+    //             ), // internal padding konten
+    //             child: Column(
+    //               mainAxisSize: MainAxisSize.min,
+    //               children: [
+    //                 Image.asset(
+    //                   'assets/images/img_download_fix.png',
+    //                   height: 180.h,
+    //                   width: 176.80,
+    //                   // fit: BoxFit.contain,
+    //                 ),
+    //                 verticalSpace(16.h),
+    //                 Text(
+    //                   Language.downloading,
+    //                   style: TextStyle(
+    //                     color: Colors.black,
+    //                     fontSize: 16.sp,
+    //                     fontFamily: 'Inter',
+    //                     fontWeight: bold,
+    //                   ),
+    //                 ),
+    //                 verticalSpace(12.h),
+    //                 Row(
+    //                   crossAxisAlignment: CrossAxisAlignment.start,
+    //                   mainAxisAlignment: MainAxisAlignment.start,
+    //                   children: [
+    //                     Expanded(
+    //                       child: LinearProgressIndicator(
+    //                         value: progress,
+    //                         backgroundColor: Colors.grey[200],
+    //                         valueColor: AlwaysStoppedAnimation<Color>(
+    //                           primary500Base,
+    //                         ),
+    //                         minHeight: 6.h,
+    //                       ),
+    //                     ),
+    //                     horizontalSpace(8.w),
+    //                     Text(
+    //                       '${(progress * 100).toInt()}%',
+    //                       style: TextStyle(
+    //                         color: text700,
+    //                         fontSize: 12.sp,
+    //                         fontFamily: 'Inter',
+    //                         fontWeight: semiBold,
+    //                       ),
+    //                     ),
+    //                   ],
+    //                 ),
+    //                 verticalSpace(12.h),
+    //                 Text(
+    //                   '${currentSize}Kb / ${totalSize}Kb',
+    //                   style: TextStyle(
+    //                     color: text400,
+    //                     fontSize: 12.sp,
+    //                     fontFamily: 'Inter',
+    //                     fontWeight: medium,
+    //                   ),
+    //                 ),
+    //                 verticalSpace(24.h),
+    //                 TextButton(
+    //                   onPressed: () {
+    //                     timer?.cancel();
+    //                     Navigator.pop(context);
+    //                   },
+    //                   child: Text(
+    //                     Language.batalkan,
+    //                     textAlign: TextAlign.center,
+    //                     style: TextStyle(
+    //                       color: error800,
+    //                       fontSize: 14.sp,
+    //                       fontFamily: 'Inter',
+    //                       fontWeight: medium,
+    //                     ),
+    //                   ),
+    //                 ),
+    //               ],
+    //             ),
+    //           ),
+    //         );
+    //       },
+    //     );
+    //   },
+    // ).then((_) {
+    //   timer?.cancel();
+    // });
+
+    final progressNotifier = ValueNotifier<double>(0.0);
+    final sizeNotifier = ValueNotifier<int>(0);
 
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            timer ??= Timer.periodic(const Duration(milliseconds: 100), (
-              Timer t,
-            ) {
-              if (progress < 1.0) {
-                setState(() {
-                  currentSize += 50;
-                  progress = currentSize / totalSize;
-                });
-              } else {
-                t.cancel();
-                Future.delayed(const Duration(seconds: 1), () {
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context);
-                });
-              }
-            });
-
+      builder: (context) {
+        return ValueListenableBuilder<double>(
+          valueListenable: progressNotifier,
+          builder: (context, progress, _) {
             return AlertDialog(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20.r),
               ),
-              contentPadding:
-                  EdgeInsets.zero, // Penting: hilangkan padding default
-              backgroundColor:
-                  Colors.transparent, // Agar tidak bentrok dengan container
-              content: Container(
-                width: double.infinity,
-                decoration: ShapeDecoration(
-                  color:
-                      Colors.white /* Color-Base-color-Background-Bg-white */,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                padding: EdgeInsets.symmetric(
-                  horizontal: 16.w,
-                  vertical: 16.h,
-                ), // internal padding konten
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Image.asset(
-                      'assets/images/img_download_fix.png',
-                      height: 180.h,
-                      width: 176.80,
-                      // fit: BoxFit.contain,
-                    ),
-                    verticalSpace(16.h),
-                    Text(
-                      Language.downloading,
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16.sp,
-                        fontFamily: 'Inter',
-                        fontWeight: bold,
-                      ),
-                    ),
-                    verticalSpace(12.h),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: LinearProgressIndicator(
-                            value: progress,
-                            backgroundColor: Colors.grey[200],
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              primary500Base,
-                            ),
-                            minHeight: 6.h,
-                          ),
-                        ),
-                        horizontalSpace(8.w),
-                        Text(
-                          '${(progress * 100).toInt()}%',
-                          style: TextStyle(
-                            color: text700,
-                            fontSize: 12.sp,
-                            fontFamily: 'Inter',
-                            fontWeight: semiBold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    verticalSpace(12.h),
-                    Text(
-                      '${currentSize}Kb / ${totalSize}Kb',
-                      style: TextStyle(
-                        color: text400,
-                        fontSize: 12.sp,
-                        fontFamily: 'Inter',
-                        fontWeight: medium,
-                      ),
-                    ),
-                    verticalSpace(24.h),
-                    TextButton(
-                      onPressed: () {
-                        timer?.cancel();
-                        Navigator.pop(context);
-                      },
-                      child: Text(
-                        Language.batalkan,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: error800,
-                          fontSize: 14.sp,
-                          fontFamily: 'Inter',
-                          fontWeight: medium,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              contentPadding: EdgeInsets.zero,
+              backgroundColor: Colors.transparent,
+              content: _buildDownloadContent(progress, sizeNotifier.value),
             );
           },
         );
       },
-    ).then((_) {
-      timer?.cancel();
-    });
+    );
+
+    /// 🔥 PENTING: tunggu dialog ter-render
+    // await Future.delayed(Duration.zero);
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    /// =========================
+    /// JALANKAN PROSES SEBENARNYA
+    /// =========================
+    if (context.mounted) {
+      await _runInitDummyWithProgress(context, progressNotifier, sizeNotifier);
+      if (context.mounted) {
+        context.pop();
+      }
+    }
+  }
+
+  Future<void> _runInitDummyWithProgress(
+    BuildContext context,
+    ValueNotifier<double> progress,
+    ValueNotifier<int> size,
+  ) async {
+    try {
+      progress.value = 0.1;
+      size.value = 500;
+
+      final result = await _dbHelper.initDummyData();
+
+      progress.value = 0.8;
+      size.value = 4000;
+
+      result.fold(
+        (failure) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(failure.message)));
+        },
+        (_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Data dummy berhasil diinisialisasi')),
+          );
+        },
+      );
+
+      progress.value = 1.0;
+      size.value = 5000;
+    } catch (e) {
+      progress.value = 1.0;
+    }
+  }
+
+  Widget _buildDownloadContent(double progress, int currentSize) {
+    const totalSize = 5000;
+
+    return Container(
+      width: double.infinity,
+      decoration: ShapeDecoration(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Image.asset('assets/images/img_download_fix.png', height: 180.h),
+          verticalSpace(16.h),
+          Text(
+            Language.downloading,
+            style: TextStyle(fontSize: 16.sp, fontWeight: bold),
+          ),
+          verticalSpace(12.h),
+          Row(
+            children: [
+              Expanded(
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 6.h,
+                  backgroundColor: Colors.grey[200],
+                  valueColor: AlwaysStoppedAnimation(primary500Base),
+                ),
+              ),
+              horizontalSpace(8.w),
+              Text('${(progress * 100).toInt()}%'),
+            ],
+          ),
+          verticalSpace(12.h),
+          Text('$currentSize Kb / $totalSize Kb'),
+          verticalSpace(24.h),
+        ],
+      ),
+    );
   }
 
   @override

@@ -4,6 +4,7 @@ import 'package:baca_meter/core/presentation/commons/themes/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:remixicon/remixicon.dart';
 
 import '../../../../../data/database/daftar_rayon/app_database.dart';
@@ -33,21 +34,11 @@ class _LastDigitPageState extends State<LastDigitPage> {
   late final DatabaseHelper _dbHelper;
   String? _errorMessage;
 
+  bool isDatabaseReady = false;
+
   PageStatus? _status;
-
-  void _onTapSearchResult(PelangganTableData pelanggan) {
-    final exists = _searchHistory.any((e) => e.id == pelanggan.id);
-
-    if (!exists) {
-      _searchHistory.insert(0, pelanggan);
-
-      if (_searchHistory.length > 10) {
-        _searchHistory.removeLast();
-      }
-    }
-
-    setState(() {});
-  }
+  final GlobalKey<LiquidPullToRefreshState> _refreshIndicatorKey =
+      GlobalKey<LiquidPullToRefreshState>();
 
   Future<void> _onSearch(String value) async {
     if (value.length != 3) return;
@@ -87,7 +78,31 @@ class _LastDigitPageState extends State<LastDigitPage> {
   @override
   void initState() {
     _dbHelper = sl<DatabaseHelper>();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      await initCekDatabase(context);
+    });
     super.initState();
+  }
+
+  Future<void> initCekDatabase(BuildContext context) async {
+    isDatabaseReady = await _dbHelper.isDataInitialized();
+
+    debugPrint('initCekDatabase: $isDatabaseReady');
+
+    if (isDatabaseReady) {
+      await _loadHistory();
+    }
+  }
+
+  Future<void> _loadHistory() async {
+    final historyList = await _dbHelper.getSearchHistory();
+
+    setState(() {
+      _searchHistory
+        ..clear()
+        ..addAll(historyList);
+    });
   }
 
   @override
@@ -97,10 +112,119 @@ class _LastDigitPageState extends State<LastDigitPage> {
       body: Stack(
         children: [
           _buildBackground(context),
+          // LiquidPullToRefresh(
+          //   backgroundColor: neutralColor1,
+          //   color: primary300,
+          //   springAnimationDurationInMilliseconds: 700,
+          //   onRefresh: () async {
+          //     await _loadHistory();
+          //   },
+          //   key: _refreshIndicatorKey,
+          //   showChildOpacityTransition: false,
+          // child:
           _buildContent(context),
+          // ),
 
           // Search Input dan Custom Keyboard Floating - dijadikan satu
-          _searchLastDigit(),
+          if (isDatabaseReady) ...[_searchLastDigit()],
+        ],
+      ),
+    );
+  }
+
+  Future<void> initDummy() async {
+    setState(() {
+      _status = PageStatus.loading;
+    });
+
+    final result = await _dbHelper.initDummyData();
+
+    result.fold(
+      (failure) {
+        setState(() {
+          _status = PageStatus.error;
+          _errorMessage = failure.message;
+        });
+      },
+      (_) async {
+        setState(() {
+          isDatabaseReady = true;
+        });
+        await _loadHistory();
+      },
+    );
+  }
+
+  Widget _buildEmptyDownloadMaster() {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          verticalSpace(16.h),
+          Center(
+            child: Image.asset(
+              'assets/images/img_empty_fix.png',
+              width: 178.w,
+              height: 180.h,
+              fit: BoxFit.contain,
+            ),
+          ),
+          verticalSpace(16.h),
+          Center(
+            child: Text(
+              Language.dataBelumTersedia,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: text700,
+                fontSize: 16.sp,
+                fontFamily: 'Inter',
+                fontWeight: semiBold,
+              ),
+            ),
+          ),
+          verticalSpace(8.h),
+          Center(
+            child: Text(
+              Language.silahkanDownloadMaster,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: const Color(0xFF131313),
+                fontSize: 14,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w400,
+                height: 1.43,
+              ),
+            ),
+          ),
+          verticalSpace(16.h),
+          Center(
+            child: GestureDetector(
+              onTap: () async {
+                await initDummy();
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                decoration: ShapeDecoration(
+                  color: const Color(0xFFF0F3FF),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  Language.downloadMasterSekarang,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: primary500Base,
+                    fontSize: 14.sp,
+                    fontFamily: 'Inter',
+                    fontWeight: semiBold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          verticalSpace(40.h), // ❌ jangan 300
         ],
       ),
     );
@@ -156,6 +280,7 @@ class _LastDigitPageState extends State<LastDigitPage> {
   }
 
   Widget _buildContent(BuildContext context) {
+    debugPrint('_buildContent: $isDatabaseReady');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.start,
@@ -223,17 +348,20 @@ class _LastDigitPageState extends State<LastDigitPage> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  _inputValue.length == 3 ? 'Pencarian' : 'Riwayat Pencarian',
-                  style: TextStyle(
-                    color: text700,
-                    fontSize: 16.sp,
-                    fontFamily: 'Inter',
-                    fontWeight: bold,
+                if (isDatabaseReady) ...[
+                  Text(
+                    _inputValue.length == 3 ? 'Pencarian' : 'Riwayat Pencarian',
+                    style: TextStyle(
+                      color: text700,
+                      fontSize: 16.sp,
+                      fontFamily: 'Inter',
+                      fontWeight: bold,
+                    ),
                   ),
-                ),
-
-                _buildContentBody(),
+                  _buildContentBody(),
+                ] else ...[
+                  _buildEmptyDownloadMaster(),
+                ],
               ],
             ),
           ),
@@ -357,8 +485,13 @@ class _LastDigitPageState extends State<LastDigitPage> {
       children: [
         verticalSpace(16.h),
         GestureDetector(
-          onTap: () {
-            _onTapSearchResult(pelanggan);
+          onTap: () async {
+            // _onTapSearchResult(pelanggan);
+            await _dbHelper.saveSearchHistory(pelanggan);
+
+            await _loadHistory(); // reload dari DB
+
+            if (!mounted) return;
             context.pushNamed(
               Routes.detailPelangganPage,
               extra: pelanggan, // kirim object

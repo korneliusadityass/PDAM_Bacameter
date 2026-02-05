@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:go_router/go_router.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:remixicon/remixicon.dart';
 
 import '../../../../../data/database/daftar_rayon/app_database.dart';
@@ -35,6 +36,9 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
 
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
+
+  final GlobalKey<LiquidPullToRefreshState> _refreshIndicatorKey =
+      GlobalKey<LiquidPullToRefreshState>();
 
   @override
   void initState() {
@@ -197,7 +201,7 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
           flex: 7,
           child: Container(
             width: double.infinity,
-            padding: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 16.h),
+
             clipBehavior: Clip.antiAlias,
             decoration: ShapeDecoration(
               color: Colors.white,
@@ -208,7 +212,18 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
                 ),
               ),
             ),
-            child: _buildRayonContent(),
+            child: LiquidPullToRefresh(
+              backgroundColor: neutralColor1,
+              color: primary300,
+              springAnimationDurationInMilliseconds: 700,
+              onRefresh: () async {
+                await _loadRayons();
+              },
+              key: _refreshIndicatorKey,
+              showChildOpacityTransition: false,
+
+              child: _buildRayonContent(),
+            ),
           ),
         ),
       ],
@@ -250,18 +265,35 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
   Widget _buildRayonContent() {
     switch (_status) {
       case PageStatus.loading:
-        return _buildLoading();
+        return Padding(
+          padding: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 16.h),
+          child: _buildLoading(),
+        );
 
       case PageStatus.error:
-        return _buildError(
-          _errorMessage ?? 'Terjadi kesalahan saat memuat data',
+        return Padding(
+          padding: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 16.h),
+          child: _buildError(
+            _errorMessage ?? 'Terjadi kesalahan saat memuat data',
+          ),
         );
 
       case PageStatus.loaded:
-        return _rayonList.isEmpty ? _buildEmpty() : _buildRayonList();
+        return _rayonList.isEmpty
+            ? Padding(
+                padding: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 16.h),
+                child: _buildEmpty(),
+              )
+            : Padding(
+                padding: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 16.h),
+                child: _buildRayonList(),
+              );
 
       default:
-        return _buildLoading();
+        return Padding(
+          padding: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 16.h),
+          child: _buildLoading(),
+        );
     }
   }
 
@@ -676,4 +708,5 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
       },
     );
   }
+
 }

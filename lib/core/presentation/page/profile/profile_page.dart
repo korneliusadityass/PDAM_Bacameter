@@ -6,9 +6,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:remixicon/remixicon.dart';
 
+import '../../../data/injection/injection.dart';
 import '../../commons/extensions/context_extension.dart';
 import '../../commons/routes/routes.dart';
 import '../../commons/themes/text_styel.dart';
+import '../../manager/database_helper.dart';
 import '../../manager/shared_preferences_helper.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -20,6 +22,14 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage>
     with AutomaticKeepAliveClientMixin {
+  late final DatabaseHelper _dbHelper;
+
+  @override
+  void initState() {
+    _dbHelper = sl<DatabaseHelper>();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -130,6 +140,29 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
+  Future<void> resetData() async {
+    if (mounted) showLoadingDialog(context);
+    final result = await _dbHelper.deleteDataLocal();
+
+    result.fold(
+      (failure) {
+        context.pop();
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(failure.message)));
+        }
+      },
+      (_) async {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Data lokal berhasil dihapus')),
+          );
+        }
+      },
+    );
+  }
+
   Widget _buildContent(BuildContext context) {
     return Container(
       width: double.infinity,
@@ -181,57 +214,63 @@ class _ProfilePageState extends State<ProfilePage>
             ),
           ),
           verticalSpace(12.h),
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-            decoration: ShapeDecoration(
-              shape: RoundedRectangleBorder(
-                side: BorderSide(width: 1, color: borderDefault),
-                borderRadius: BorderRadius.circular(12),
+          GestureDetector(
+            onTap: () async => await resetData(),
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              decoration: ShapeDecoration(
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(width: 1, color: borderDefault),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              spacing: 12.w,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  clipBehavior: Clip.antiAlias,
-                  decoration: ShapeDecoration(
-                    color: const Color(
-                      0xFFFFEADA,
-                    ) /* Color-System-color-Error-error-1 */,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(80),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: 12.w,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    clipBehavior: Clip.antiAlias,
+                    decoration: ShapeDecoration(
+                      color: const Color(
+                        0xFFFFEADA,
+                      ) /* Color-System-color-Error-error-1 */,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(80),
+                      ),
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Remix.delete_bin_6_fill,
+                        color: error500,
+                        size: 18,
+                      ),
                     ),
                   ),
-                  child: Center(
-                    child: Icon(
-                      Remix.delete_bin_6_fill,
-                      color: error500,
-                      size: 18,
+                  Text(
+                    Language.hapusHasilBaca,
+                    style: TextStyle(
+                      color: text700,
+                      fontSize: 14.sp,
+                      fontFamily: 'Inter',
+                      fontWeight: medium,
                     ),
                   ),
-                ),
-                Text(
-                  Language.hapusHasilBaca,
-                  style: TextStyle(
-                    color: text700,
-                    fontSize: 14.sp,
-                    fontFamily: 'Inter',
-                    fontWeight: medium,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           verticalSpace(24.h),
           GestureDetector(
-            onTap: () {
-              context.goNamed(Routes.loginPage);
-              SharedPrefsHelper.logoutUser();
+            onTap: () async {
+              await resetData();
+              await SharedPrefsHelper.logoutUser();
+              if (context.mounted) {
+                context.goNamed(Routes.loginPage);
+              }
             },
             child: Container(
               width: double.infinity,

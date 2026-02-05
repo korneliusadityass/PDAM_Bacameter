@@ -134,6 +134,14 @@ class DatabaseHelper {
     }
   }
 
+  Future<bool> isDataInitialized() async {
+    final result = await getAllRayons();
+
+    if (result.isLeft()) return false;
+
+    return result.getOrElse(() => []).isNotEmpty;
+  }
+
   Future<Either<Failure, List<RayonTableData>>> searchRayons(
     String keyword,
   ) async {
@@ -252,4 +260,75 @@ class DatabaseHelper {
     }
   }
 
+  Future<void> saveSearchHistory(PelangganTableData pelanggan) async {
+    await db
+        .into(db.searchHistoryTable)
+        .insert(
+          SearchHistoryTableCompanion.insert(pelangganId: pelanggan.id),
+          mode: InsertMode.insertOrIgnore,
+        );
+
+    // Batasi max 10 item
+    final histories = await (db.select(
+      db.searchHistoryTable,
+    )..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).get();
+
+    if (histories.length > 10) {
+      final toDelete = histories.skip(10).map((e) => e.id).toList();
+      await (db.delete(
+        db.searchHistoryTable,
+      )..where((t) => t.id.isIn(toDelete))).go();
+    }
+  }
+
+  Future<List<PelangganTableData>> getSearchHistory() async {
+    final query = db.customSelect(
+      '''
+    SELECT p.*
+    FROM search_history_table h
+    JOIN pelanggan_table p ON p.id = h.pelanggan_id
+    ORDER BY h.created_at DESC
+    ''',
+      readsFrom: {db.searchHistoryTable, db.pelangganTable},
+    );
+
+    return query
+        .map(
+          (row) => PelangganTableData(
+            id: row.read<int>('id'),
+            idRayon: row.read<int>('id_rayon'),
+            idPelanggan: row.read<int>('id_pelanggan'),
+            nama: row.read<String>('nama'),
+            alamat: row.read<String>('alamat'),
+            noMeter: row.read<String>('no_meter'),
+            sudahDibaca: row.read<bool>('sudah_dibaca'),
+            tanggalBaca: row.read<DateTime?>('tanggal_baca'),
+            standMeter: row.read<int?>('stand_meter'),
+            statusTerupload: row.read<bool>('status_terupload'),
+          ),
+        )
+        .get();
+  }
+
+  /// ======================
+  /// DELETE LOCAL DATA
+  /// ======================
+  Future<Either<Failure, Unit>> deleteDataLocal() async {
+    try {
+      await db.transaction(() async {
+        // 1️⃣ Hapus search history dulu (relasi ke pelanggan)
+        await db.delete(db.searchHistoryTable).go();
+
+        // 2️⃣ Hapus pelanggan
+        await db.delete(db.pelangganTable).go();
+
+        // 3️⃣ Hapus rayon
+        await db.delete(db.rayonTable).go();
+      });
+
+      return right(unit);
+    } catch (e) {
+      return left(ServerFailure('Gagal menghapus data lokal'));
+    }
+  }
 }
