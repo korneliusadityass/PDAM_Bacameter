@@ -1,3 +1,4 @@
+import 'package:baca_meter/core/presentation/commons/extensions/num_extension.dart';
 import 'package:baca_meter/core/presentation/commons/language/language.dart';
 import 'package:baca_meter/core/presentation/commons/methods/methods.dart';
 import 'package:baca_meter/core/presentation/commons/themes/color.dart';
@@ -6,11 +7,14 @@ import 'package:baca_meter/core/presentation/commons/themes/text_styel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:remixicon/remixicon.dart';
 
+import '../../../data/injection/injection.dart';
 import '../../commons/extensions/context_extension.dart';
 import '../../commons/routes/routes.dart';
+import '../../manager/database_helper.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -19,8 +23,52 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin {
-  
+class _HomePageState extends State<HomePage>
+    with AutomaticKeepAliveClientMixin {
+  late final DatabaseHelper _dbHelper;
+  int _totalPelanggan = 0;
+  int _totalTerbaca = 0;
+  int _totalBelumTerbaca = 0;
+
+  final GlobalKey<LiquidPullToRefreshState> _refreshIndicatorKey =
+      GlobalKey<LiquidPullToRefreshState>();
+
+  @override
+  void initState() {
+    _dbHelper = sl<DatabaseHelper>();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      await _loadStatistic();
+    });
+    super.initState();
+  }
+
+  Future<void> _loadStatistic() async {
+    final result = await _dbHelper.getAllRayons();
+
+    if (result.isLeft()) return;
+
+    final rayons = result.getOrElse(() => []);
+
+    int totalPelanggan = 0;
+    int totalTerbaca = 0;
+    int totalBelumTerbaca = 0;
+
+    for (final r in rayons) {
+      totalPelanggan += r.totalList;
+      totalTerbaca += r.totalListTerbaca;
+      totalBelumTerbaca += r.totalListBelumTerbaca;
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      _totalPelanggan = totalPelanggan;
+      _totalTerbaca = totalTerbaca;
+      _totalBelumTerbaca = totalBelumTerbaca;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,7 +80,18 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
   }
 
   Widget _buildContent(BuildContext context) {
-    return Column(
+    return
+    // LiquidPullToRefresh(
+    //   backgroundColor: neutralColor1,
+    //   color: primary300,
+    //   springAnimationDurationInMilliseconds: 700,
+    //   onRefresh: () async {
+    //     await _loadStatistic();
+    //   },
+    //   key: _refreshIndicatorKey,
+    //   showChildOpacityTransition: false,
+    //   child:
+    Column(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,146 +210,188 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
         // Content
         Expanded(child: _content()),
       ],
-    );
+    )
+    // )
+    ;
   }
 
   Widget _content() {
-    return Container(
-      // clipBehavior: Clip.hardEdge,
-      width: double.infinity,
-      padding: EdgeInsets.only(
-        // top: 24.h,
-        left: 16.w,
-        right: 16.w,
-        // bottom: 16.h,
+    return ClipRRect(
+      borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(24),
+        topRight: Radius.circular(24),
       ),
-      decoration: ShapeDecoration(
-        color: Colors.white /* Color-Base-color-Background-Bg-white */,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(24),
-            topRight: Radius.circular(24),
-          ),
-        ),
-      ),
-      child: ListView(
-        scrollDirection: Axis.vertical,
-        shrinkWrap: true,
-        padding: EdgeInsets.zero,
-        children: [
-          verticalSpace(24.h),
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(
-              vertical: 16.h,
-              horizontal: 16.w,
-            ), // EdgeInsets.all16),
-            decoration: ShapeDecoration(
-              color: const Color(
-                0xFFF0F3FF,
-              ) /* Color-Base-color-Background-Bg-sections */,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  Language.laporanProduktivitasPembaca,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: const Color(0xFF1F1F25),
-                    fontSize: 16.sp,
-                    fontFamily: 'Inter',
-                    fontWeight: bold,
-                  ),
+      child: Container(
+        // clipBehavior: Clip.hardEdge,
+        width: double.infinity,
+        color: Colors.white,
+        // decoration: ShapeDecoration(
+        //   color: Colors.white /* Color-Base-color-Background-Bg-white */,
+        //   shape: RoundedRectangleBorder(
+        //     borderRadius: BorderRadius.only(
+        //       topLeft: Radius.circular(24),
+        //       topRight: Radius.circular(24),
+        //     ),
+        //   ),
+        // ),
+        child: LiquidPullToRefresh(
+          backgroundColor: neutralColor1,
+          color: primary300,
+          springAnimationDurationInMilliseconds: 700,
+          onRefresh: () async {
+            await _loadStatistic();
+          },
+          key: _refreshIndicatorKey,
+          showChildOpacityTransition: false,
+          child: ListView(
+            scrollDirection: Axis.vertical,
+            shrinkWrap: true,
+            padding: EdgeInsets.zero,
+            children: [
+              verticalSpace(24.h),
+              Padding(
+                padding: EdgeInsets.only(
+                  // top: 24.h,
+                  left: 16.w,
+                  right: 16.w,
+                  // bottom: 16.h,
                 ),
-                verticalSpace(24.h),
-                Align(
-                  alignment: Alignment.topCenter,
-                  heightFactor: 0.6, // 👈 POTONG TINGGI JADI SETENGAH
-                  child: Stack(
-                    alignment: Alignment.center,
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(
+                    vertical: 16.h,
+                    horizontal: 16.w,
+                  ), // EdgeInsets.all16),
+                  decoration: ShapeDecoration(
+                    color: const Color(
+                      0xFFF0F3FF,
+                    ) /* Color-Base-color-Background-Bg-sections */,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Background setengah lingkaran
-                      CircularPercentIndicator(
-                        radius: 80.0,
-                        lineWidth: 12.0,
-                        percent: 1.0,
-                        arcType: ArcType.HALF,
-                        circularStrokeCap: CircularStrokeCap.round,
-                        progressBorderColor: baseWhite,
-                        progressColor: baseWhite.withValues(alpha: 0.3),
-                        backgroundColor: Colors.transparent,
+                      Text(
+                        Language.laporanProduktivitasPembaca,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: const Color(0xFF1F1F25),
+                          fontSize: 16.sp,
+                          fontFamily: 'Inter',
+                          fontWeight: bold,
+                        ),
                       ),
-                      // Progress sebenarnya
-                      CircularPercentIndicator(
-                        radius: 80.0,
-                        lineWidth: 12.0,
-                        percent: 0.62,
-                        arcType: ArcType.HALF,
-                        circularStrokeCap: CircularStrokeCap.round,
-                        progressColor: primary500Base,
-                        backgroundColor: Colors.transparent,
-                        center: Column(
-                          mainAxisSize: MainAxisSize.min,
+                      verticalSpace(24.h),
+                      Align(
+                        alignment: Alignment.topCenter,
+                        heightFactor: 0.6, // 👈 POTONG TINGGI JADI SETENGAH
+                        child: Stack(
+                          alignment: Alignment.center,
                           children: [
-                            Text(
-                              '62 %',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: text700,
-                                fontSize: 28.sp,
-                                fontFamily: 'Inter',
-                                fontWeight: bold,
-                              ),
+                            // Background setengah lingkaran
+                            CircularPercentIndicator(
+                              radius: 80.0,
+                              lineWidth: 12.0,
+                              percent: 1.0,
+                              arcType: ArcType.HALF,
+                              circularStrokeCap: CircularStrokeCap.round,
+                              progressBorderColor: baseWhite,
+                              progressColor: baseWhite.withValues(alpha: 0.3),
+                              backgroundColor: Colors.transparent,
                             ),
-                            Text(
-                              'Selesai',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: text400,
-                                fontSize: 12.sp,
-                                fontFamily: 'Inter',
-                                fontWeight: regular,
+                            // Progress sebenarnya
+                            CircularPercentIndicator(
+                              radius: 80.0,
+                              lineWidth: 12.0,
+                              percent: 0.62,
+                              arcType: ArcType.HALF,
+                              circularStrokeCap: CircularStrokeCap.round,
+                              progressColor: primary500Base,
+                              backgroundColor: Colors.transparent,
+                              center: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    '62 %',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: text700,
+                                      fontSize: 28.sp,
+                                      fontFamily: 'Inter',
+                                      fontWeight: bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Selesai',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: text400,
+                                      fontSize: 12.sp,
+                                      fontFamily: 'Inter',
+                                      fontWeight: regular,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
                       ),
+                      verticalSpace(24.h),
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildStatItem(
+                            'Jumlah Pelanggan',
+                            _totalPelanggan.toCurrencyNoRp(),
+                          ),
+                          verticalSpace(12.h),
+                          _buildStatItem(
+                            'Sudah Terbaca',
+                            _totalTerbaca.toCurrencyNoRp(),
+                          ),
+                          verticalSpace(12.h),
+                          _buildStatItem(
+                            'Belum Terbaca',
+                            _totalBelumTerbaca.toCurrencyNoRp(),
+                          ),
+                          verticalSpace(12.h),
+                          _buildStatItem('Belum Upload', '0'),
+                          verticalSpace(12.h),
+                          _buildStatItem('Kelainan', '0'),
+                        ],
+                      ),
                     ],
                   ),
                 ),
-                verticalSpace(24.h),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
+              ),
+              verticalSpace(24.h),
+              // Daftar
+              Padding(
+                padding: EdgeInsets.only(
+                  // top: 24.h,
+                  left: 16.w,
+                  right: 16.w,
+                  // bottom: 16.h,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildStatItem('Jumlah Pelanggan', '0'),
-                    verticalSpace(12.h),
-                    _buildStatItem('Sudah Terbaca', '0'),
-                    verticalSpace(12.h),
-                    _buildStatItem('Belum Terbaca', '0'),
-                    verticalSpace(12.h),
-                    _buildStatItem('Belum Upload', '0'),
-                    verticalSpace(12.h),
-                    _buildStatItem('Kelainan', '0'),
+                    _buildRayonList(),
+                    _buildLastDigit(),
+                    _buildScan(),
                   ],
                 ),
-              ],
-            ),
+              ),
+              verticalSpace(200.h),
+            ],
           ),
-          verticalSpace(24.h),
-          // Daftar
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [_buildRayonList(), _buildLastDigit(), _buildScan()],
-          ),
-          verticalSpace(200.h),
-        ],
+        ),
       ),
     );
   }
@@ -473,7 +574,7 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
       ],
     );
   }
-  
+
   @override
   bool get wantKeepAlive => true;
 }

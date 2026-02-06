@@ -154,6 +154,7 @@ class _ProfilePageState extends State<ProfilePage>
         }
       },
       (_) async {
+        context.pop();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Data lokal berhasil dihapus')),
