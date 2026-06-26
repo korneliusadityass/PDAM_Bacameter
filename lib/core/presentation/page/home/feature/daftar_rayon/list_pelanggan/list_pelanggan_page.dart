@@ -15,6 +15,7 @@ import '../../../../../commons/themes/constants.dart';
 import '../../../../../commons/themes/text_styel.dart';
 import '../../../../../manager/database_helper.dart';
 import '../../../../../widget/button/normal_button.dart';
+import '../../../../../widget/animation/staggered_animation_widget.dart';
 
 class ListPelangganPage extends StatefulWidget {
   final String rayonId;
@@ -30,7 +31,8 @@ class ListPelangganPage extends StatefulWidget {
   State<ListPelangganPage> createState() => _ListPelangganPageState();
 }
 
-class _ListPelangganPageState extends State<ListPelangganPage> {
+class _ListPelangganPageState extends State<ListPelangganPage>
+    with TickerProviderStateMixin {
   List<PelangganTableData> _pelangganList = [];
   late final DatabaseHelper _dbHelper;
   // bool _isLoading = true;
@@ -50,6 +52,8 @@ class _ListPelangganPageState extends State<ListPelangganPage> {
 
   Future<void> _initializeDatabase() async {
     _dbHelper = sl<DatabaseHelper>();
+    debugPrint('idRayon: ${widget.rayonId}');
+    debugPrint('rayonName: ${widget.rayonName}');
     await _loadPelanggan();
   }
 
@@ -79,6 +83,7 @@ class _ListPelangganPageState extends State<ListPelangganPage> {
       (data) {
         setState(() {
           _pelangganList = data;
+          debugPrint("datanya ${data.length}");
           // _emptySearch = false;
           _status = PageStatus.loaded;
         });
@@ -262,7 +267,7 @@ class _ListPelangganPageState extends State<ListPelangganPage> {
                   top: 0,
                   right: 0,
                   child: Image.asset(
-                    'assets/icon/home/ic_appbar.png',
+                    'assets/icon/home/ic_appbar.webp',
                     width: width * 0.5,
                     fit: BoxFit.contain,
                   ),
@@ -470,12 +475,17 @@ class _ListPelangganPageState extends State<ListPelangganPage> {
 
       separatorBuilder: (_, __) => verticalSpace(12.h),
       itemBuilder: (context, index) {
+        // Staggered delay per item (max 10 items animated, rest instant for memory)
+        final delay = index < 10 ? index * 60 : 0;
         return Padding(
           padding: EdgeInsets.only(
             bottom: index == pelanggans.length - 1 ? 300.h : 0.h,
             top: index == 0 ? 12.h : 0.h,
           ),
-          child: _buildListItemPelanggan(pelanggans[index]),
+          child: StaggeredAnimationWidget(
+            delay: Duration(milliseconds: delay),
+            child: _buildListItemPelanggan(pelanggans[index]),
+          ),
         );
       },
     );

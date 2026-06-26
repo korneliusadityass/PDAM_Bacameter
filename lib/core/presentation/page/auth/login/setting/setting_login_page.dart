@@ -29,7 +29,6 @@ class SettingsDialog extends StatefulWidget {
 }
 
 class _SettingsDialogState extends State<SettingsDialog> {
-  final TextEditingController _passwordController = TextEditingController();
   bool _showPasswordField = false;
   String? _currentSelectedPdam;
 

@@ -16,6 +16,7 @@ import '../../../../commons/routes/routes.dart';
 import '../../../../commons/themes/constants.dart';
 import '../../../../commons/themes/text_styel.dart';
 import '../../../../manager/database_helper.dart';
+import '../../../../widget/animation/staggered_animation_widget.dart';
 import '../../../../widget/button/normal_button.dart';
 
 class DaftarRayonPage extends StatefulWidget {
@@ -26,7 +27,7 @@ class DaftarRayonPage extends StatefulWidget {
 }
 
 class _DaftarRayonPageState extends State<DaftarRayonPage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late TabController _tabController;
   List<RayonTableData> _rayonList = [];
   late final DatabaseHelper _dbHelper;
@@ -40,10 +41,59 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
   final GlobalKey<LiquidPullToRefreshState> _refreshIndicatorKey =
       GlobalKey<LiquidPullToRefreshState>();
 
+  // === Entrance Animations ===
+  late final AnimationController _entranceController;
+  late final Animation<double> _headerFade;
+  late final Animation<Offset> _headerSlide;
+  late final Animation<double> _contentFade;
+  late final Animation<Offset> _contentSlide;
+  late final Animation<double> _searchFade;
+  late final Animation<Offset> _searchSlide;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+
+    // Setup entrance animation
+    _entranceController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    _headerFade = CurvedAnimation(
+      parent: _entranceController,
+      curve: const Interval(0.0, 0.5, curve: Curves.easeIn),
+    );
+    _headerSlide = Tween<Offset>(begin: const Offset(0, -0.15), end: Offset.zero)
+        .animate(CurvedAnimation(
+      parent: _entranceController,
+      curve: const Interval(0.0, 0.5, curve: Curves.easeOutQuart),
+    ));
+
+    _contentFade = CurvedAnimation(
+      parent: _entranceController,
+      curve: const Interval(0.2, 0.7, curve: Curves.easeIn),
+    );
+    _contentSlide = Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero)
+        .animate(CurvedAnimation(
+      parent: _entranceController,
+      curve: const Interval(0.2, 0.7, curve: Curves.easeOutQuart),
+    ));
+
+    _searchFade = CurvedAnimation(
+      parent: _entranceController,
+      curve: const Interval(0.4, 0.9, curve: Curves.easeIn),
+    );
+    _searchSlide = Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero)
+        .animate(CurvedAnimation(
+      parent: _entranceController,
+      curve: const Interval(0.4, 0.9, curve: Curves.easeOutQuart),
+    ));
+
+    Future.delayed(const Duration(milliseconds: 150), () {
+      if (mounted) _entranceController.forward();
+    });
 
     _initializeDatabase();
   }
@@ -108,6 +158,7 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
 
   @override
   void dispose() {
+    _entranceController.dispose();
     _searchController.dispose();
     _searchFocusNode.dispose();
     _tabController.dispose();
@@ -138,7 +189,13 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
       bottom: 16.h,
       left: 16.w,
       right: 16.w,
-      child: Column(children: [_buildBaccanSection()]),
+      child: SlideTransition(
+        position: _searchSlide,
+        child: FadeTransition(
+          opacity: _searchFade,
+          child: Column(children: [_buildBaccanSection()]),
+        ),
+      ),
     );
   }
 
@@ -157,72 +214,86 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
               top: 16.h,
               right: defaultMargin.w,
             ),
-            child: Column(
-              children: [
-                verticalSpace(24.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+            child: SlideTransition(
+              position: _headerSlide,
+              child: FadeTransition(
+                opacity: _headerFade,
+                child: Column(
                   children: [
-                    GestureDetector(
-                      onTap: () => context.pop(),
-                      child: Icon(
-                        Remix.arrow_left_line,
-                        color: baseWhite,
-                        size: 20,
-                      ),
-                    ),
-                    Expanded(
-                      child: Text(
-                        Language.daftarRayon,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20.sp,
-                          fontFamily: 'Inter',
-                          fontWeight: bold,
+                    verticalSpace(24.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: () => context.pop(),
+                          child: Icon(
+                            Remix.arrow_left_line,
+                            color: baseWhite,
+                            size: 20,
+                          ),
                         ),
-                      ),
+                        Expanded(
+                          child: Text(
+                            Language.daftarRayon,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20.sp,
+                              fontFamily: 'Inter',
+                              fontWeight: bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+
+                    /// ❌ HILANG SAAT KEYBOARD TERBUKA
+                    if (!isKeyboardOpen) ...[
+                      const Spacer(),
+                      _buildBaccanSectionNew(),
+                      verticalSpace(16.h),
+                    ],
                   ],
                 ),
-
-                /// ❌ HILANG SAAT KEYBOARD TERBUKA
-                if (!isKeyboardOpen) ...[
-                  const Spacer(),
-                  _buildBaccanSectionNew(),
-                  verticalSpace(16.h),
-                ],
-              ],
+              ),
             ),
           ),
         ),
         Expanded(
           flex: 7,
-          child: Container(
-            width: double.infinity,
+          child: SlideTransition(
+            position: _contentSlide,
+            child: FadeTransition(
+              opacity: _contentFade,
+              child: Container(
+                width: double.infinity,
 
-            clipBehavior: Clip.antiAlias,
-            decoration: ShapeDecoration(
-              color: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  topRight: Radius.circular(24),
+                clipBehavior: Clip.antiAlias,
+                decoration: ShapeDecoration(
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(24),
+                      topRight: Radius.circular(24),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            child: LiquidPullToRefresh(
-              backgroundColor: neutralColor1,
-              color: primary300,
-              springAnimationDurationInMilliseconds: 700,
-              onRefresh: () async {
-                await _loadRayons();
-              },
-              key: _refreshIndicatorKey,
-              showChildOpacityTransition: false,
+                child: _rayonList.isEmpty && !_emptySearch
+                    ? _downloadData()
+                    : LiquidPullToRefresh(
+                        backgroundColor: neutralColor1,
+                        color: primary300,
+                        springAnimationDurationInMilliseconds: 700,
+                        onRefresh: () async {
+                          await _loadRayons();
+                        },
+                        key: _refreshIndicatorKey,
+                        showChildOpacityTransition: false,
 
-              child: _buildRayonContent(),
+                        child: _buildRayonContent(),
+                      ),
+              ),
             ),
           ),
         ),
@@ -249,7 +320,7 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
                   top: 0,
                   right: 0,
                   child: Image.asset(
-                    'assets/icon/home/ic_appbar.png',
+                    'assets/icon/home/ic_appbar.webp',
                     width: width * 0.5,
                     fit: BoxFit.contain,
                   ),
@@ -447,12 +518,17 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
       itemCount: rayons.length,
       separatorBuilder: (_, __) => verticalSpace(12.h),
       itemBuilder: (context, index) {
+        // Staggered delay per item (max 8 items animated, rest instant)
+        final delay = index < 8 ? index * 60 : 0;
         return Padding(
           padding: EdgeInsets.only(
             bottom: index == rayons.length - 1 ? 300.h : 0.h,
             top: index == 0 ? 12.h : 0.h,
           ),
-          child: _buildRayonItem(rayons[index]),
+          child: StaggeredAnimationWidget(
+            delay: Duration(milliseconds: delay),
+            child: _buildRayonItem(rayons[index]),
+          ),
         );
       },
     );
@@ -461,6 +537,9 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
   Widget _buildRayonItem(RayonTableData rayon) {
     return GestureDetector(
       onTap: () {
+        debugPrint('=== NAVIGASI KE LIST PELANGGAN ===');
+        debugPrint('Mengirim rayonId: ${rayon.idRayon}');
+        debugPrint('Mengirim rayonName: ${rayon.namaRayon}');
         context.pushNamed(
           Routes.listPelangganPage,
           queryParameters: {
@@ -619,13 +698,81 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
     );
   }
 
+  Widget _downloadData() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          verticalSpace(16.h),
+          Image.asset(
+            'assets/images/img_empty_fix.webp',
+            width: 178.w,
+            height: 180.h,
+            fit: BoxFit.contain,
+          ),
+          verticalSpace(16.h),
+          Text(
+            Language.dataBelumTersedia,
+            style: TextStyle(
+              color: text700,
+              fontSize: 16.sp,
+              fontFamily: 'Inter',
+              fontWeight: semiBold,
+            ),
+
+            textAlign: TextAlign.center,
+          ),
+          verticalSpace(8.h),
+          Text(
+            Language.silahkanDownloadMaster,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: const Color(0xFF131313),
+              fontSize: 14,
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w400,
+              height: 1.43,
+            ),
+          ),
+          verticalSpace(16.h),
+          GestureDetector(
+            onTap: () async {
+              // await _dbHelper.initDummyData();
+              await initDummy();
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              decoration: ShapeDecoration(
+                color: const Color(0xFFF0F3FF),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                Language.downloadMasterSekarang,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: primary500Base,
+                  fontSize: 14.sp,
+                  fontFamily: 'Inter',
+                  fontWeight: semiBold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildEmpty() {
     return Center(
       child: ListView(
         children: [
           verticalSpace(16.h),
           Image.asset(
-            'assets/images/img_empty_fix.png',
+            'assets/images/img_empty_fix.webp',
             width: 178.w,
             height: 180.h,
             fit: BoxFit.contain,
@@ -708,5 +855,4 @@ class _DaftarRayonPageState extends State<DaftarRayonPage>
       },
     );
   }
-
 }

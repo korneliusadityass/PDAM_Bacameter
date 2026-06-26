@@ -20,21 +20,53 @@ class MainPage extends StatefulWidget {
   State<MainPage> createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> {
+class _MainPageState extends State<MainPage>
+    with SingleTickerProviderStateMixin {
   final PageController _pageController = PageController();
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [HomePage(), ManagementDataPage(), ProfilePage()];
 
+  // === Animation ===
+  late final AnimationController _navBarController;
+  late final Animation<Offset> _navBarSlide;
+  late final Animation<double> _navBarFade;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Bottom nav bar: slide up + fade in (500ms, delay 300ms)
+    _navBarController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _navBarSlide = Tween<Offset>(begin: const Offset(0, 1.0), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _navBarController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
+    _navBarFade = CurvedAnimation(
+      parent: _navBarController,
+      curve: Curves.easeOut,
+    );
+
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) _navBarController.forward();
+    });
+  }
+
   @override
   void dispose() {
+    _navBarController.dispose();
     _pageController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
     if (context.isPhone) {
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,
@@ -42,29 +74,36 @@ class _MainPageState extends State<MainPage> {
       ]);
     }
 
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body:
-          // Halaman utama
-          SafeArea(
-            bottom: false,
-            child: PageView(
-              controller: _pageController,
-              physics: const NeverScrollableScrollPhysics(),
-              children: _pages,
-              onPageChanged: (index) {
-                setState(() {
-                  _selectedIndex = index;
-                });
-              },
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: primary500Base,
+        statusBarIconBrightness: Brightness.light,
+      ),
+      child: Scaffold(
+        backgroundColor: primary500Base,
+        resizeToAvoidBottomInset: false,
+        body:
+            // Halaman utama
+            SafeArea(
+              // top: false,
+              bottom: false,
+              child: PageView(
+                controller: _pageController,
+                physics: const NeverScrollableScrollPhysics(),
+                children: _pages,
+                onPageChanged: (index) {
+                  setState(() {
+                    _selectedIndex = index;
+                  });
+                },
+              ),
             ),
-          ),
 
-      bottomNavigationBar: SafeArea(
-        bottom: defaultTargetPlatform == TargetPlatform.android ? true : false,
-        child: Container(
-          color: Colors.white, // ⬅️ background area bawah
-          child: _buildBottomNavBar(),
+        bottomNavigationBar: SafeArea(
+          bottom: defaultTargetPlatform == TargetPlatform.android
+              ? true
+              : false,
+          child: Container(color: Colors.white, child: _buildBottomNavBar()),
         ),
       ),
     );
@@ -75,7 +114,7 @@ class _MainPageState extends State<MainPage> {
       margin: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 16.h),
       padding: EdgeInsets.symmetric(vertical: 12.h),
       decoration: ShapeDecoration(
-        color: Colors.white /* Color-Base-color-Background-Bg-white */,
+        color: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         shadows: [
           BoxShadow(
@@ -86,43 +125,66 @@ class _MainPageState extends State<MainPage> {
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List.generate(_navBarItems.length, (index) {
-          final item = _navBarItems[index];
-          final isSelected = _selectedIndex == index;
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedIndex = index;
-              });
-              _pageController.jumpToPage(index);
-            },
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  isSelected ? item.selectedIcon : item.icon,
-                  size: 24,
-                  color: isSelected ? primary500Base : text300,
-                ),
-                verticalSpace(5.h),
-                ...item.title.map(
-                  (line) => Text(
-                    line,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: isSelected ? semiBold : medium,
-                      fontFamily: 'Inter',
-                      color: isSelected ? primary500Base : text300,
+      child: SlideTransition(
+        position: _navBarSlide,
+        child: FadeTransition(
+          opacity: _navBarFade,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(_navBarItems.length, (index) {
+              final item = _navBarItems[index];
+              final isSelected = _selectedIndex == index;
+              return Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    setState(() {
+                      _selectedIndex = index;
+                    });
+                    _pageController.jumpToPage(index);
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeInOut,
+                    color: Colors.transparent,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AnimatedScale(
+                          scale: isSelected ? 1.2 : 1.0,
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOutBack,
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 200),
+                            child: Icon(
+                              isSelected ? item.selectedIcon : item.icon,
+                              key: ValueKey<bool>(isSelected),
+                              size: 24,
+                              color: isSelected ? primary500Base : text300,
+                            ),
+                          ),
+                        ),
+                        verticalSpace(5.h),
+                        ...item.title.map(
+                          (line) => AnimatedDefaultTextStyle(
+                            duration: const Duration(milliseconds: 250),
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              fontWeight: isSelected ? semiBold : medium,
+                              fontFamily: 'Inter',
+                              color: isSelected ? primary500Base : text300,
+                            ),
+                            child: Text(line, textAlign: TextAlign.center),
+                          ),
+                        ),
+                      ],
                     ),
-                    textAlign: TextAlign.center,
                   ),
                 ),
-              ],
-            ),
-          );
-        }),
+              );
+            }),
+          ),
+        ),
       ),
     );
   }

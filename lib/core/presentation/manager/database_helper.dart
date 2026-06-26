@@ -1,6 +1,7 @@
 import 'package:baca_meter/core/data/database/daftar_rayon/app_database.dart';
 import 'package:dartz/dartz.dart';
 import 'package:drift/drift.dart';
+import 'package:flutter/widgets.dart';
 
 import '../../data/utilities/failure/failure.dart';
 
@@ -14,19 +15,19 @@ class DatabaseHelper {
   /// ======================
   Future<Either<Failure, Unit>> initDummyData() async {
     try {
-      final exist = await db.select(db.rayonTable).get();
-      if (exist.isNotEmpty) {
-        return right(unit);
-      }
-
+      // Bersihkan data lama
       await db.transaction(() async {
+        await db.delete(db.pelangganTable).go();
+        await db.delete(db.rayonTable).go();
+
+        // Jalankan fungsi dummy yang sudah saling terhubung lewat ID statis
         await _insertDummyRayon();
         await _insertDummyPelanggan();
       });
 
       return right(unit);
     } catch (e) {
-      return Left(ServerFailure('Gagal inisialisasi data'));
+      return left(ServerFailure('Gagal inisialisasi data'));
     }
   }
 
@@ -36,12 +37,14 @@ class DatabaseHelper {
   Future<void> _insertDummyRayon() async {
     final rayons = [
       RayonTableCompanion.insert(
+        idRayon: const Value(1), // <-- ID Statis (1)
         namaRayon: 'Rayon A',
         totalList: const Value(3),
         totalListTerbaca: const Value(1),
         totalListBelumTerbaca: const Value(2),
       ),
       RayonTableCompanion.insert(
+        idRayon: const Value(2), // <-- ID Statis (2)
         namaRayon: 'Rayon B',
         totalList: const Value(2),
         totalListTerbaca: const Value(0),
@@ -59,7 +62,7 @@ class DatabaseHelper {
   /// ======================
   Future<void> _insertDummyPelanggan() async {
     final pelanggan = [
-      // Rayon A
+      // Rayon A (idRayon = 1)
       PelangganTableCompanion.insert(
         idRayon: 1,
         idPelanggan: 1238173123,
@@ -94,7 +97,7 @@ class DatabaseHelper {
         statusTerupload: const Value(false),
       ),
 
-      // Rayon B
+      // Rayon B (idRayon = 2)
       PelangganTableCompanion.insert(
         idRayon: 2,
         nama: 'Dewi Lestari',
@@ -160,6 +163,7 @@ class DatabaseHelper {
   Future<Either<Failure, List<PelangganTableData>>> getPelangganByRayon(
     int idRayon,
   ) async {
+    debugPrint('idRayon: ${idRayon.toString()}');
     try {
       final result = await (db.select(
         db.pelangganTable,

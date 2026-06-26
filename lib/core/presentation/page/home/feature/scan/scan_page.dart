@@ -18,6 +18,7 @@ import '../../../../commons/themes/constants.dart';
 import '../../../../commons/themes/text_styel.dart';
 import '../../../../widget/loading/loading_widget.dart';
 import '../../../../widget/shimmer/shimmer_widget.dart';
+import '../../../../widget/animation/staggered_animation_widget.dart';
 
 class ScanPage extends StatefulWidget {
   const ScanPage({super.key});
@@ -27,7 +28,7 @@ class ScanPage extends StatefulWidget {
 }
 
 class _ScanPageState extends State<ScanPage>
-    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   MobileScannerController? controller;
   StreamSubscription<BarcodeCapture>? subscription;
   late AnimationController _scanLineController;
@@ -94,10 +95,10 @@ class _ScanPageState extends State<ScanPage>
   }
 
   @override
-  void dispose() async {
+  void dispose() {
     _scanLineController.dispose();
     WidgetsBinding.instance.removeObserver(this);
-    await controller?.dispose();
+    controller?.dispose();
     controller = null;
     subscription?.cancel();
 
@@ -249,7 +250,7 @@ class _ScanPageState extends State<ScanPage>
                   top: 0,
                   right: 0,
                   child: Image.asset(
-                    'assets/icon/home/ic_appbar.png',
+                    'assets/icon/home/ic_appbar.webp',
                     width: width * 0.5,
                     fit: BoxFit.contain,
                   ),
@@ -334,113 +335,121 @@ class _ScanPageState extends State<ScanPage>
               children: [
                 // Area Scanner Live
                 Expanded(
-                  child: Container(
-                    // margin: EdgeInsets.symmetric(horizontal: 16.w),
-                    clipBehavior: Clip.hardEdge,
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Builder(
-                      builder: (context) {
-                        if (controller == null) {
-                          return const LoadingWidget();
-                        }
+                  child: StaggeredAnimationWidget(
+                    delay: const Duration(milliseconds: 0),
+                    child: Container(
+                      // margin: EdgeInsets.symmetric(horizontal: 16.w),
+                      clipBehavior: Clip.hardEdge,
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Builder(
+                        builder: (context) {
+                          if (controller == null) {
+                            return const LoadingWidget();
+                          }
 
-                        return Stack(
-                          children: [
-                            // Live Camera Preview
-                            MobileScanner(
-                              controller: controller,
-                              onDetect: _onDetectBarcode,
-                              errorBuilder: (context, exception) =>
-                                  _onErrorWidget(context, exception),
-                              onDetectError: _onDetectError,
-                              placeholderBuilder: (_) => _onPlaceholder(),
-                              fit: BoxFit.cover,
-                            ),
+                          return Stack(
+                            children: [
+                              // Live Camera Preview
+                              MobileScanner(
+                                controller: controller,
+                                onDetect: _onDetectBarcode,
+                                errorBuilder: (context, exception) =>
+                                    _onErrorWidget(context, exception),
+                                onDetectError: _onDetectError,
+                                placeholderBuilder: (_) => _onPlaceholder(),
+                                fit: BoxFit.cover,
+                              ),
 
-                            // 🔴 Animasi Garis Scan Merah
-                            AnimatedBuilder(
-                              animation: _scanLineAnimation,
-                              builder: (context, child) {
-                                return Align(
-                                  alignment: Alignment(
-                                    0,
-                                    _scanLineAnimation.value,
-                                  ),
-                                  child: Container(
-                                    height: 2.h,
-                                    margin: EdgeInsets.symmetric(
-                                      horizontal: 12.w,
+                              // 🔴 Animasi Garis Scan Merah
+                              AnimatedBuilder(
+                                animation: _scanLineAnimation,
+                                builder: (context, child) {
+                                  return Align(
+                                    alignment: Alignment(
+                                      0,
+                                      _scanLineAnimation.value,
                                     ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.redAccent.withValues(
-                                        alpha: 0.9,
+                                    child: Container(
+                                      height: 2.h,
+                                      margin: EdgeInsets.symmetric(
+                                        horizontal: 12.w,
                                       ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.redAccent.withValues(
-                                            alpha: 0.6,
-                                          ),
-                                          blurRadius: 8,
-                                          spreadRadius: 1,
+                                      decoration: BoxDecoration(
+                                        color: Colors.redAccent.withValues(
+                                          alpha: 0.9,
                                         ),
-                                      ],
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.redAccent.withValues(
+                                              alpha: 0.6,
+                                            ),
+                                            blurRadius: 8,
+                                            spreadRadius: 1,
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                );
-                              },
-                            ),
+                                  );
+                                },
+                              ),
 
-                            // // Tombol Flash (fungsional)
-                            Positioned(
-                              bottom: 16.h,
-                              right: 16.w,
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  customBorder: const CircleBorder(),
-                                  onTap: () {
-                                    if (controller != null) {
-                                      controller!.toggleTorch();
-                                    }
-                                  },
-                                  splashColor: baseBlack.withValues(alpha: 0.5),
-                                  child: Ink(
-                                    padding: EdgeInsets.all(12.r),
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: baseWhite,
+                              // // Tombol Flash (fungsional)
+                              Positioned(
+                                bottom: 16.h,
+                                right: 16.w,
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    customBorder: const CircleBorder(),
+                                    onTap: () {
+                                      if (controller != null) {
+                                        controller!.toggleTorch();
+                                      }
+                                    },
+                                    splashColor: baseBlack.withValues(
+                                      alpha: 0.5,
                                     ),
-                                    child: Icon(
-                                      controller?.torchEnabled == true
-                                          ? Remix.flashlight_fill
-                                          : Remix.flashlight_line,
-                                      size: 24.w,
-                                      color: text700,
+                                    child: Ink(
+                                      padding: EdgeInsets.all(12.r),
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: baseWhite,
+                                      ),
+                                      child: Icon(
+                                        controller?.torchEnabled == true
+                                            ? Remix.flashlight_fill
+                                            : Remix.flashlight_line,
+                                        size: 24.w,
+                                        color: text700,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        );
-                      },
+                            ],
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
 
                 verticalSpace(24.h),
-                Center(
-                  child: Text(
-                    Language.arahkanKameraKeKodeQr,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: text400,
-                      fontSize: 16.sp,
-                      fontFamily: 'Inter',
-                      fontWeight: medium,
+                StaggeredAnimationWidget(
+                  delay: const Duration(milliseconds: 60),
+                  child: Center(
+                    child: Text(
+                      Language.arahkanKameraKeKodeQr,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: text400,
+                        fontSize: 16.sp,
+                        fontFamily: 'Inter',
+                        fontWeight: medium,
+                      ),
                     ),
                   ),
                 ),

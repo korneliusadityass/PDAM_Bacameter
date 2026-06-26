@@ -102,8 +102,8 @@ class AppRouter {
         },
       ),
     ],
-    // initialLocation: '/splash',
-    initialLocation: '/main-page',
+    initialLocation: '/splash',
+    // initialLocation: '/main-page',
     debugLogDiagnostics: kDebugMode ? true : false,
   );
 }

@@ -8,6 +8,7 @@ class InternetConnectionProvider with ChangeNotifier {
   bool _isConnected = true;
   bool get isConnected => _isConnected;
 
+  bool _isDisposed = false;
   late StreamSubscription _connectivitySubscription;
 
   InternetConnectionProvider() {
@@ -19,6 +20,8 @@ class InternetConnectionProvider with ChangeNotifier {
         Connectivity().onConnectivityChanged.listen((_) async {
       final result = await ConnectivityManager.isOnline();
 
+      if (_isDisposed) return;
+      
       if (_isConnected != result) {
         _isConnected = result;
         notifyListeners();
@@ -26,13 +29,18 @@ class InternetConnectionProvider with ChangeNotifier {
     });
 
     ConnectivityManager.isOnline().then((result) {
-      _isConnected = result;
-      notifyListeners();
+      if (_isDisposed) return;
+      
+      if (_isConnected != result) {
+        _isConnected = result;
+        notifyListeners();
+      }
     });
   }
 
   @override
   void dispose() {
+    _isDisposed = true;
     _connectivitySubscription.cancel();
     super.dispose();
   }

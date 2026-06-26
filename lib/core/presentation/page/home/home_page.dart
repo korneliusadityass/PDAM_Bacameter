@@ -24,7 +24,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage>
-    with AutomaticKeepAliveClientMixin {
+    with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late final DatabaseHelper _dbHelper;
   int _totalPelanggan = 0;
   int _totalTerbaca = 0;
@@ -33,14 +33,123 @@ class _HomePageState extends State<HomePage>
   final GlobalKey<LiquidPullToRefreshState> _refreshIndicatorKey =
       GlobalKey<LiquidPullToRefreshState>();
 
+  // === Animation Controllers ===
+  late final AnimationController _headerController;
+  late final Animation<double> _profileFade;
+  late final Animation<Offset> _profileSlide;
+
+  late final AnimationController _badgeController;
+  late final Animation<double> _badgeScale;
+  late final Animation<double> _badgeFade;
+
+  late final AnimationController _cardController;
+  late final Animation<double> _cardFade;
+  late final Animation<Offset> _cardSlide;
+
+  late final AnimationController _buttonsController;
+  late final Animation<double> _button1Scale;
+  late final Animation<double> _button2Scale;
+  late final Animation<double> _button3Scale;
+
   @override
   void initState() {
+    super.initState();
     _dbHelper = sl<DatabaseHelper>();
+
+    // 1. Profile header: fade + slide from left (600ms)
+    _headerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _profileFade = CurvedAnimation(
+      parent: _headerController,
+      curve: Curves.easeOut,
+    );
+    _profileSlide = Tween<Offset>(
+      begin: const Offset(-0.1, 0),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _headerController, curve: Curves.easeOutCubic),
+    );
+
+    // 2. Periode badge: scale + fade (500ms, delay 200ms)
+    _badgeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _badgeScale = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: _badgeController, curve: Curves.easeOutBack),
+    );
+    _badgeFade = CurvedAnimation(
+      parent: _badgeController,
+      curve: Curves.easeOut,
+    );
+
+    // 3. Stats card: slide up + fade (600ms, delay 400ms)
+    _cardController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _cardFade = CurvedAnimation(
+      parent: _cardController,
+      curve: Curves.easeOut,
+    );
+    _cardSlide = Tween<Offset>(
+      begin: const Offset(0, 0.15),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _cardController, curve: Curves.easeOutCubic),
+    );
+
+    // 4. Action buttons: staggered scale (900ms total, delay 700ms)
+    _buttonsController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+    _button1Scale = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _buttonsController,
+        curve: const Interval(0.0, 0.4, curve: Curves.easeOutBack),
+      ),
+    );
+    _button2Scale = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _buttonsController,
+        curve: const Interval(0.2, 0.6, curve: Curves.easeOutBack),
+      ),
+    );
+    _button3Scale = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _buttonsController,
+        curve: const Interval(0.4, 0.8, curve: Curves.easeOutBack),
+      ),
+    );
+
+    // Start animation sequence
+    _headerController.forward();
+    Future.delayed(const Duration(milliseconds: 200), () {
+      if (mounted) _badgeController.forward();
+    });
+    Future.delayed(const Duration(milliseconds: 400), () {
+      if (mounted) _cardController.forward();
+    });
+    Future.delayed(const Duration(milliseconds: 700), () {
+      if (mounted) _buttonsController.forward();
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       await _loadStatistic();
     });
-    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _headerController.dispose();
+    _badgeController.dispose();
+    _cardController.dispose();
+    _buttonsController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadStatistic() async {
@@ -71,6 +180,7 @@ class _HomePageState extends State<HomePage>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -97,112 +207,121 @@ class _HomePageState extends State<HomePage>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Profile
-        Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: defaultMargin.w,
-            vertical: 16.h,
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                clipBehavior: Clip.antiAlias,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
-                ),
-                child: Icon(Icons.person, color: Colors.blue[700], size: 35),
+        SlideTransition(
+          position: _profileSlide,
+          child: FadeTransition(
+            opacity: _profileFade,
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: defaultMargin.w,
+                vertical: 16.h,
               ),
-              horizontalSpace(12.w),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
+              child: Row(
                 children: [
-                  Text(
-                    'Rey Ronald',
-                    style: TextStyle(
-                      color: Colors.white /* Color-Base-color-Text-Text-1 */,
-                      fontSize: 16.sp,
-                      fontFamily: 'Inter',
-                      fontWeight: semiBold,
+                  Container(
+                    width: 44,
+                    height: 44,
+                    clipBehavior: Clip.antiAlias,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
                     ),
+                    child: Icon(Icons.person, color: Colors.blue[700], size: 35),
                   ),
-                  verticalSpace(4.h),
-                  Text(
-                    'Petugas Pembaca Meter',
-                    style: TextStyle(
-                      color: Colors.white /* Color-Base-color-Text-Text-1 */,
-                      fontSize: 12.sp,
-                      fontFamily: 'Inter',
-                      fontWeight: regular,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-
-        // Periode Pembacaan
-        Padding(
-          padding: EdgeInsets.symmetric(
-            vertical: 12.h,
-            horizontal: defaultMargin.w,
-          ),
-          child: Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-            decoration: ShapeDecoration(
-              color: Colors.white.withValues(alpha: 0.25),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              spacing: 10,
-              children: [
-                Container(
-                  width: 10,
-                  height: 10,
-                  decoration: ShapeDecoration(
-                    color:
-                        Colors.white /* Color-Base-color-Background-Bg-white */,
-                    shape: OvalBorder(),
-                  ),
-                ),
-                Text.rich(
-                  TextSpan(
+                  horizontalSpace(12.w),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      TextSpan(
-                        text: 'Periode Pembacaan: ',
+                      Text(
+                        'Rey Ronald',
                         style: TextStyle(
-                          color: Colors
-                              .white /* Color-Base-color-Background-Bg-white */,
-                          fontSize: 14.sp,
+                          color: Colors.white,
+                          fontSize: 16.sp,
+                          fontFamily: 'Inter',
+                          fontWeight: semiBold,
+                        ),
+                      ),
+                      verticalSpace(4.h),
+                      Text(
+                        'Petugas Pembaca Meter',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12.sp,
                           fontFamily: 'Inter',
                           fontWeight: regular,
                         ),
                       ),
-                      TextSpan(
-                        text: 'Oktober 2025',
-                        style: TextStyle(
-                          color: Colors
-                              .white /* Color-Base-color-Background-Bg-white */,
-                          fontSize: 14.sp,
-                          fontFamily: 'Inter',
-                          fontWeight: bold,
-                        ),
-                      ),
                     ],
                   ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // Periode Pembacaan
+        FadeTransition(
+          opacity: _badgeFade,
+          child: ScaleTransition(
+            scale: _badgeScale,
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                vertical: 12.h,
+                horizontal: defaultMargin.w,
+              ),
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                decoration: ShapeDecoration(
+                  color: Colors.white.withValues(alpha: 0.25),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
                 ),
-              ],
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  spacing: 10,
+                  children: [
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: ShapeDecoration(
+                        color: Colors.white,
+                        shape: OvalBorder(),
+                      ),
+                    ),
+                    Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: 'Periode Pembacaan: ',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14.sp,
+                              fontFamily: 'Inter',
+                              fontWeight: regular,
+                            ),
+                          ),
+                          TextSpan(
+                            text: 'Oktober 2025',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14.sp,
+                              fontFamily: 'Inter',
+                              fontWeight: bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -371,21 +490,34 @@ class _HomePageState extends State<HomePage>
               ),
               verticalSpace(24.h),
               // Daftar
-              Padding(
-                padding: EdgeInsets.only(
-                  // top: 24.h,
-                  left: 16.w,
-                  right: 16.w,
-                  // bottom: 16.h,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildRayonList(),
-                    _buildLastDigit(),
-                    _buildScan(),
-                  ],
+              SlideTransition(
+                position: _cardSlide,
+                child: FadeTransition(
+                  opacity: _cardFade,
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: 16.w,
+                      right: 16.w,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ScaleTransition(
+                          scale: _button1Scale,
+                          child: _buildRayonList(),
+                        ),
+                        ScaleTransition(
+                          scale: _button2Scale,
+                          child: _buildLastDigit(),
+                        ),
+                        ScaleTransition(
+                          scale: _button3Scale,
+                          child: _buildScan(),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
               verticalSpace(200.h),
@@ -416,7 +548,7 @@ class _HomePageState extends State<HomePage>
                   top: 0,
                   right: 0,
                   child: Image.asset(
-                    'assets/icon/home/ic_appbar.png',
+                    'assets/icon/home/ic_appbar.webp',
                     width: width * 0.5,
                     fit: BoxFit.contain,
                   ),

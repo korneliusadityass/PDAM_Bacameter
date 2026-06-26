@@ -21,13 +21,73 @@ class ManagementDataPage extends StatefulWidget {
 }
 
 class _ManagementDataPageState extends State<ManagementDataPage>
-    with AutomaticKeepAliveClientMixin {
+    with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late final DatabaseHelper _dbHelper;
+
+  // === Animation Controllers ===
+  late final AnimationController _animController;
+  late final Animation<double> _titleFade;
+  late final Animation<Offset> _item1Slide;
+  late final Animation<double> _item1Fade;
+  late final Animation<Offset> _item2Slide;
+  late final Animation<double> _item2Fade;
+  late final Animation<Offset> _item3Slide;
+  late final Animation<double> _item3Fade;
 
   @override
   void initState() {
-    _dbHelper = sl<DatabaseHelper>();
     super.initState();
+    _dbHelper = sl<DatabaseHelper>();
+
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    _titleFade = CurvedAnimation(
+      parent: _animController,
+      curve: const Interval(0.0, 0.4, curve: Curves.easeIn),
+    );
+
+    _item1Slide = Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero)
+        .animate(CurvedAnimation(
+      parent: _animController,
+      curve: const Interval(0.2, 0.6, curve: Curves.easeOutQuart),
+    ));
+    _item1Fade = CurvedAnimation(
+      parent: _animController,
+      curve: const Interval(0.2, 0.6, curve: Curves.easeIn),
+    );
+
+    _item2Slide = Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero)
+        .animate(CurvedAnimation(
+      parent: _animController,
+      curve: const Interval(0.4, 0.8, curve: Curves.easeOutQuart),
+    ));
+    _item2Fade = CurvedAnimation(
+      parent: _animController,
+      curve: const Interval(0.4, 0.8, curve: Curves.easeIn),
+    );
+
+    _item3Slide = Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero)
+        .animate(CurvedAnimation(
+      parent: _animController,
+      curve: const Interval(0.6, 1.0, curve: Curves.easeOutQuart),
+    ));
+    _item3Fade = CurvedAnimation(
+      parent: _animController,
+      curve: const Interval(0.6, 1.0, curve: Curves.easeIn),
+    );
+
+    Future.delayed(const Duration(milliseconds: 200), () {
+      if (mounted) _animController.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
   }
 
   Future<void> initDummy() async {
@@ -53,6 +113,7 @@ class _ManagementDataPageState extends State<ManagementDataPage>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final width = context.width;
     final height = context.height;
     return Scaffold(
@@ -83,7 +144,7 @@ class _ManagementDataPageState extends State<ManagementDataPage>
                   top: 0,
                   right: 0,
                   child: Image.asset(
-                    'assets/icon/home/ic_appbar.png',
+                    'assets/icon/home/ic_appbar.webp',
                     width: width * 0.5,
                     fit: BoxFit.contain,
                   ),
@@ -105,14 +166,17 @@ class _ManagementDataPageState extends State<ManagementDataPage>
         Expanded(
           flex: 2, // tinggi relatif (background)
           child: Center(
-            child: Text(
-              Language.manajemenData,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20.sp,
-                fontFamily: 'Inter',
-                fontWeight: bold,
+            child: FadeTransition(
+              opacity: _titleFade,
+              child: Text(
+                Language.manajemenData,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20.sp,
+                  fontFamily: 'Inter',
+                  fontWeight: bold,
+                ),
               ),
             ),
           ),
@@ -141,53 +205,81 @@ class _ManagementDataPageState extends State<ManagementDataPage>
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  Language.downloadPembacaan,
-                  style: TextStyle(
-                    color: text700,
-                    fontSize: 16.sp,
-                    fontFamily: 'Inter',
-                    fontWeight: bold,
-                  ),
-                ),
-                verticalSpace(16.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () async {
-                          await _showDownloadDialog(context);
-                        },
-                        child: _buildDownloadMaster(context),
-                      ),
+                SlideTransition(
+                  position: _item1Slide,
+                  child: FadeTransition(
+                    opacity: _item1Fade,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          Language.downloadPembacaan,
+                          style: TextStyle(
+                            color: text700,
+                            fontSize: 16.sp,
+                            fontFamily: 'Inter',
+                            fontWeight: bold,
+                          ),
+                        ),
+                        verticalSpace(16.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () async {
+                                  await _showDownloadDialog(context);
+                                },
+                                child: _buildDownloadMaster(context),
+                              ),
+                            ),
+                            horizontalSpace(12.w),
+                            Expanded(child: _buildDownloadBcUlang()),
+                          ],
+                        ),
+                      ],
                     ),
-                    horizontalSpace(12.w),
-                    Expanded(child: _buildDownloadBcUlang()),
-                  ],
+                  ),
                 ),
                 verticalSpace(24.w),
-                Text(
-                  Language.uploadDanExportData,
-                  style: TextStyle(
-                    color: text700,
-                    fontSize: 16.sp,
-                    fontFamily: 'Inter',
-                    fontWeight: bold,
+                SlideTransition(
+                  position: _item2Slide,
+                  child: FadeTransition(
+                    opacity: _item2Fade,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          Language.uploadDanExportData,
+                          style: TextStyle(
+                            color: text700,
+                            fontSize: 16.sp,
+                            fontFamily: 'Inter',
+                            fontWeight: bold,
+                          ),
+                        ),
+                        verticalSpace(16.h),
+                        _buildUploadPembacaan(),
+                      ],
+                    ),
                   ),
                 ),
                 verticalSpace(16.h),
-                _buildUploadPembacaan(),
-                verticalSpace(16.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(child: _buildImportDatabase()),
-                    horizontalSpace(12.w),
-                    Expanded(child: _buildExportDatabase()),
-                  ],
+                SlideTransition(
+                  position: _item3Slide,
+                  child: FadeTransition(
+                    opacity: _item3Fade,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: _buildImportDatabase()),
+                        horizontalSpace(12.w),
+                        Expanded(child: _buildExportDatabase()),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -405,7 +497,7 @@ class _ManagementDataPageState extends State<ManagementDataPage>
     //               mainAxisSize: MainAxisSize.min,
     //               children: [
     //                 Image.asset(
-    //                   'assets/images/img_download_fix.png',
+    //                   'assets/images/img_download_fix.webp',
     //                   height: 180.h,
     //                   width: 176.80,
     //                   // fit: BoxFit.contain,
@@ -570,7 +662,7 @@ class _ManagementDataPageState extends State<ManagementDataPage>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Image.asset('assets/images/img_download_fix.png', height: 180.h),
+          Image.asset('assets/images/img_download_fix.webp', height: 180.h),
           verticalSpace(16.h),
           Text(
             Language.downloading,

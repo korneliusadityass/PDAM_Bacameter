@@ -15,6 +15,7 @@ import '../../../../commons/extensions/context_extension.dart';
 import '../../../../commons/language/language.dart';
 import '../../../../commons/themes/constants.dart';
 import '../../../../commons/themes/text_styel.dart';
+import '../../../../widget/animation/staggered_animation_widget.dart';
 import '../../../../widget/bottom_sheet_pilih_data/bottom_sheet_pilih_data.dart';
 
 class DetailPelangganPage extends StatefulWidget {
@@ -25,13 +26,11 @@ class DetailPelangganPage extends StatefulWidget {
   State<DetailPelangganPage> createState() => _DetailPelangganPageState();
 }
 
-class _DetailPelangganPageState extends State<DetailPelangganPage> {
+class _DetailPelangganPageState extends State<DetailPelangganPage>
+    with TickerProviderStateMixin {
   bool _isKelainanExpanded = true;
   bool _isPerubahanAtributExpanded = true;
   bool _isRincianRekeningExpanded = true;
-
-  File? _meteranImage;
-  File? _rumahImage;
 
   File? _selectedMeteranImage;
   File? _selectedRumahImage;
@@ -195,15 +194,30 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildDetailPelanggan(),
+                  StaggeredAnimationWidget(
+                    delay: const Duration(milliseconds: 0),
+                    child: _buildDetailPelanggan(),
+                  ),
                   verticalSpace(16.h),
-                  _buildPemakaianSection(),
+                  StaggeredAnimationWidget(
+                    delay: const Duration(milliseconds: 60),
+                    child: _buildPemakaianSection(),
+                  ),
                   verticalSpace(16.h),
-                  _buildKelainanSection(),
+                  StaggeredAnimationWidget(
+                    delay: const Duration(milliseconds: 120),
+                    child: _buildKelainanSection(),
+                  ),
                   verticalSpace(16.h),
-                  _buildPerubahanAtributSection(),
+                  StaggeredAnimationWidget(
+                    delay: const Duration(milliseconds: 180),
+                    child: _buildPerubahanAtributSection(),
+                  ),
                   verticalSpace(16.h),
-                  _buildRincianRekeningSection(),
+                  StaggeredAnimationWidget(
+                    delay: const Duration(milliseconds: 240),
+                    child: _buildRincianRekeningSection(),
+                  ),
                   verticalSpace(150.h),
                 ],
               ),
@@ -233,7 +247,7 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
                   top: 0,
                   right: 0,
                   child: Image.asset(
-                    'assets/icon/home/ic_appbar.png',
+                    'assets/icon/home/ic_appbar.webp',
                     width: width * 0.5,
                     fit: BoxFit.contain,
                   ),
@@ -409,8 +423,6 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
             onImagePicked: (File? imageFile) {
               setState(() {
                 _selectedMeteranImage = imageFile;
-                _meteranImage =
-                    imageFile; // Juga simpan di variabel utama jika diperlukan
               });
             },
           ),
@@ -426,8 +438,6 @@ class _DetailPelangganPageState extends State<DetailPelangganPage> {
             onImagePicked: (File? imageFile) {
               setState(() {
                 _selectedRumahImage = imageFile;
-                _rumahImage =
-                    imageFile; // Juga simpan di variabel utama jika diperlukan
               });
             },
           ),

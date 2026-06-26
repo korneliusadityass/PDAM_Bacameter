@@ -64,7 +64,7 @@ class SplashPage extends StatelessWidget {
             children: [
               // 🔹 Background image + tint color
               Image.asset(
-                'assets/images/bg_login.png',
+                'assets/images/bg_login.webp',
                 fit: BoxFit.cover,
                 width: double.infinity,
                 height: double.infinity,
@@ -73,7 +73,7 @@ class SplashPage extends StatelessWidget {
               // 🔹 Logo di tengah
               Center(
                 child: Image.asset(
-                  'assets/icon/ic_baca_meter.png',
+                  'assets/icon/ic_baca_meter.webp',
                   width: 134.w,
                   height: 120.h,
                 ),
@@ -100,7 +100,7 @@ class SplashPage extends StatelessWidget {
                       ),
                       verticalSpace(8.h),
                       Image.asset(
-                        'assets/icon/logo_mkp_white.png',
+                        'assets/icon/logo_mkp_white.webp',
                         width: 85.w,
                         height: 24.h,
                       ),

@@ -4,7 +4,6 @@ import 'package:baca_meter/core/presentation/commons/themes/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:remixicon/remixicon.dart';
 
 import '../../../../../data/database/daftar_rayon/app_database.dart';
@@ -16,6 +15,7 @@ import '../../../../commons/routes/routes.dart';
 import '../../../../commons/themes/text_styel.dart';
 import '../../../../manager/database_helper.dart';
 import '../../../../widget/custom_keyboard/custom_keyboard.dart';
+import '../../../../widget/animation/staggered_animation_widget.dart';
 
 class LastDigitPage extends StatefulWidget {
   const LastDigitPage({super.key});
@@ -24,7 +24,8 @@ class LastDigitPage extends StatefulWidget {
   State<LastDigitPage> createState() => _LastDigitPageState();
 }
 
-class _LastDigitPageState extends State<LastDigitPage> {
+class _LastDigitPageState extends State<LastDigitPage>
+    with TickerProviderStateMixin {
   String _inputValue = '';
   bool _showKeyboard = false;
 
@@ -37,8 +38,6 @@ class _LastDigitPageState extends State<LastDigitPage> {
   bool isDatabaseReady = false;
 
   PageStatus? _status;
-  final GlobalKey<LiquidPullToRefreshState> _refreshIndicatorKey =
-      GlobalKey<LiquidPullToRefreshState>();
 
   Future<void> _onSearch(String value) async {
     if (value.length != 3) return;
@@ -164,7 +163,7 @@ class _LastDigitPageState extends State<LastDigitPage> {
           verticalSpace(16.h),
           Center(
             child: Image.asset(
-              'assets/images/img_empty_fix.png',
+              'assets/images/img_empty_fix.webp',
               width: 178.w,
               height: 180.h,
               fit: BoxFit.contain,
@@ -266,7 +265,7 @@ class _LastDigitPageState extends State<LastDigitPage> {
                   top: 0,
                   right: 0,
                   child: Image.asset(
-                    'assets/icon/home/ic_appbar.png',
+                    'assets/icon/home/ic_appbar.webp',
                     width: width * 0.5,
                     fit: BoxFit.contain,
                   ),
@@ -421,45 +420,44 @@ class _LastDigitPageState extends State<LastDigitPage> {
             ? idStr.substring(idStr.length - 3)
             : idStr;
 
+        // Staggered delay per item (max 10 items animated for memory efficiency)
+        final delay = index < 10 ? index * 60 : 0;
         return Padding(
           padding: EdgeInsets.only(
             bottom: index == _searchHistory.length - 1 ? 300.h : 0.h,
             top: index == 0 ? 16.h : 0.h,
           ),
-          child: ListTile(
-            dense: true,
-            visualDensity: VisualDensity.compact,
-            contentPadding: EdgeInsets.zero,
-            title: Text(
-              pelanggan.nama,
-              style: TextStyle(
-                color: baseBlack,
-                fontSize: 14.sp,
-                fontFamily: 'Inter',
-                fontWeight: regular,
+          child: StaggeredAnimationWidget(
+            delay: Duration(milliseconds: delay),
+            child: ListTile(
+              dense: true,
+              visualDensity: VisualDensity.compact,
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                pelanggan.nama,
+                style: TextStyle(
+                  color: baseBlack,
+                  fontSize: 14.sp,
+                  fontFamily: 'Inter',
+                  fontWeight: regular,
+                ),
               ),
-            ),
-            trailing: Text(
-              '*******$last3',
-              style: TextStyle(
-                color: baseBlack,
-                fontSize: 14.sp,
-                fontFamily: 'Inter',
-                fontWeight: regular,
+              trailing: Text(
+                '*******$last3',
+                style: TextStyle(
+                  color: baseBlack,
+                  fontSize: 14.sp,
+                  fontFamily: 'Inter',
+                  fontWeight: regular,
+                ),
               ),
+              onTap: () {
+                context.pushNamed(
+                  Routes.detailPelangganPage,
+                  extra: pelanggan, // kirim object langsung
+                );
+              },
             ),
-            onTap: () {
-              // setState(() {
-              // _inputValue = last3;
-              // _searchResult
-              //   ..clear()
-              //   ..add(pelanggan);
-              // });
-              context.pushNamed(
-                Routes.detailPelangganPage,
-                extra: pelanggan, // kirim object langsung
-              );
-            },
           ),
         );
       },
@@ -484,87 +482,90 @@ class _LastDigitPageState extends State<LastDigitPage> {
     return Column(
       children: [
         verticalSpace(16.h),
-        GestureDetector(
-          onTap: () async {
-            // _onTapSearchResult(pelanggan);
-            await _dbHelper.saveSearchHistory(pelanggan);
+        StaggeredAnimationWidget(
+          delay: const Duration(milliseconds: 0),
+          child: GestureDetector(
+            onTap: () async {
+              // _onTapSearchResult(pelanggan);
+              await _dbHelper.saveSearchHistory(pelanggan);
 
-            await _loadHistory(); // reload dari DB
+              await _loadHistory(); // reload dari DB
 
-            if (!mounted) return;
-            context.pushNamed(
-              Routes.detailPelangganPage,
-              extra: pelanggan, // kirim object
-            );
-          },
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-            width: double.infinity,
-            decoration: ShapeDecoration(
-              color: Colors.white,
-              shape: RoundedRectangleBorder(
-                side: BorderSide(width: 1, color: borderDefault),
-                borderRadius: BorderRadius.circular(12),
+              if (!mounted) return;
+              context.pushNamed(
+                Routes.detailPelangganPage,
+                extra: pelanggan, // kirim object
+              );
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+              width: double.infinity,
+              decoration: ShapeDecoration(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(width: 1, color: borderDefault),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(
-                        text: prefix,
-                        style: TextStyle(
-                          color: text700,
-                          fontSize: 14.sp,
-                          fontFamily: 'Inter',
-                          fontWeight: regular,
-                          height: 1.43,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: prefix,
+                          style: TextStyle(
+                            color: text700,
+                            fontSize: 14.sp,
+                            fontFamily: 'Inter',
+                            fontWeight: regular,
+                            height: 1.43,
+                          ),
                         ),
-                      ),
-                      TextSpan(
-                        text: last3Digits,
-                        style: TextStyle(
-                          color: secondary500,
-                          fontSize: 14.sp,
-                          fontFamily: 'Inter',
-                          fontWeight: bold,
+                        TextSpan(
+                          text: last3Digits,
+                          style: TextStyle(
+                            color: secondary500,
+                            fontSize: 14.sp,
+                            fontFamily: 'Inter',
+                            fontWeight: bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  verticalSpace(8.h),
+                  Text(
+                    name,
+                    style: TextStyle(
+                      color: text700,
+                      fontSize: 16.sp,
+                      fontWeight: bold,
+                      fontFamily: 'Inter',
+                    ),
+                  ),
+                  verticalSpace(8.h),
+                  Row(
+                    children: [
+                      Icon(Remix.map_pin_fill, size: 16, color: text500Base),
+                      horizontalSpace(8.w),
+                      Expanded(
+                        child: Text(
+                          location,
+                          style: TextStyle(
+                            color: text700,
+                            fontSize: 14.sp,
+                            fontFamily: 'Inter',
+                            fontWeight: regular,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   ),
-                ),
-                verticalSpace(8.h),
-                Text(
-                  name,
-                  style: TextStyle(
-                    color: text700,
-                    fontSize: 16.sp,
-                    fontWeight: bold,
-                    fontFamily: 'Inter',
-                  ),
-                ),
-                verticalSpace(8.h),
-                Row(
-                  children: [
-                    Icon(Remix.map_pin_fill, size: 16, color: text500Base),
-                    horizontalSpace(8.w),
-                    Expanded(
-                      child: Text(
-                        location,
-                        style: TextStyle(
-                          color: text700,
-                          fontSize: 14.sp,
-                          fontFamily: 'Inter',
-                          fontWeight: regular,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -841,7 +842,7 @@ class _LastDigitPageState extends State<LastDigitPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/images/img_empty_fix.png',
+              'assets/images/img_empty_fix.webp',
               width: 220.w,
               height: 220.h,
               fit: BoxFit.contain,
