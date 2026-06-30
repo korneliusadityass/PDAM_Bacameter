@@ -7,6 +7,7 @@ import 'package:baca_meter/core/presentation/widget/connection_widgets/global_co
 import 'package:cupertino_will_pop_scope/cupertino_will_pop_scope.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -20,36 +21,6 @@ import 'core/presentation/manager/device_helper.dart';
 import 'core/presentation/manager/multi_provider_helper.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
-// void main() {
-//   runApp(const MyApp());
-// }
-
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
-
-//   // This widget is the root of your application.
-//   @override
-//   Widget build(BuildContext context) {
-//     final dynamicSize =
-//         // context.isTablet ? const Size(900, 1280) :
-//         const Size(375, 812);
-
-//     ScreenUtil.init(context, designSize: dynamicSize);
-//     return MaterialApp(
-//       // title: 'Flutter Demo',
-//       theme: ThemeData(
-//         colorScheme: ColorScheme.fromSeed(
-//           seedColor: primary500Base,
-//           surface: primary500Base,
-//           surfaceTint: text500Base,
-//           onSurface: text500Base,
-//         ),
-//       ),
-//       home: const LoginPage(),
-//     );
-//   }
-// }
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -75,7 +46,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _checkSecurity() async {
     try {
-      if (AppConfig.instance.environment == 'production') {
+      if (kReleaseMode && AppConfig.instance.environment == 'production') {
         final isDevMode = await SafeDevice.isDevelopmentModeEnable;
         if (isDevMode) {
           if (mounted) {
